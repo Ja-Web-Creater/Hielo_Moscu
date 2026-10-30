@@ -3,42 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - Sistema de Rutas y Clientes</title>
-
+    <title>Hielo Moscú - Mapa de Rutas</title>
     <script>
-        window.tailwind = {
-            config: {
-                theme: {
-                    extend: {
-                        colors: {
-                            brand: {
-                                50: '#f0f7ff',
-                                100: '#e0effe',
-                                500: '#0284c7',
-                                600: '#0369a1',
-                                700: '#0c4a6e',
-                                dark: '#0f172a'
-                            }
-                        }
-                    }
-                }
-            }
-        };
+        window.tailwind = { config: { theme: { extend: { colors: { brand: { 500: '#0284c7', 600: '#0369a1' } } } } } };
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        #map, #previewMap { min-height: 350px; z-index: 1; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-20 md:pb-0 md:pl-64">
 
-    <!-- DESKTOP SIDEBAR -->
+    <!-- SIDEBAR PC -->
     <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-white fixed left-0 top-0 bottom-0 z-50 border-r border-slate-800">
         <div class="p-5 flex items-center gap-3 border-b border-slate-800">
             <div class="w-10 h-10 rounded-xl bg-sky-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
@@ -49,257 +25,81 @@
                 <p class="text-xs text-slate-400">Panel Logístico v2.0</p>
             </div>
         </div>
-        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
-            <button onclick="switchTab('mapa')" id="side-mapa" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+        <nav class="flex-1 p-4 space-y-1.5">
+            <a href="index.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium bg-sky-600 text-white transition-all">
                 <i class="fa-solid fa-map text-lg w-6"></i> Mapa de rutas
-            </button>
-            <button onclick="switchTab('clientes')" id="side-clientes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+            </a>
+            <a href="clientes.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
                 <i class="fa-solid fa-users text-lg w-6"></i> Lista de Clientes
-            </button>
-            <button onclick="switchTab('rutas')" id="side-rutas" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+            </a>
+            <a href="rutas.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
                 <i class="fa-solid fa-route text-lg w-6"></i> Gestión de Rutas
-            </button>
-            <button onclick="switchTab('agregar')" id="side-agregar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+            </a>
+            <a href="agregar.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
                 <i class="fa-solid fa-circle-plus text-lg w-6"></i> Agregar Cliente
-            </button>
+            </a>
         </nav>
-        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-            MÁS QUE HIELO,<br>CONFIANZA EN TU RUTA
-        </div>
     </aside>
 
-    <!-- MOBILE HEADER -->
+    <!-- HEADER MÓVIL -->
     <header class="md:hidden bg-white border-b border-slate-200 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg bg-sky-500 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+            <div class="w-9 h-9 rounded-lg bg-sky-500 flex items-center justify-center text-white shadow-md">
                 <i class="fa-solid fa-snowflake text-lg"></i>
             </div>
             <div>
-                <h1 class="font-extrabold text-slate-900 tracking-tight leading-none text-base">HIELO MOSCÚ</h1>
-                <span id="mobileTabTitle" class="text-xs font-semibold text-sky-600">Mapa</span>
+                <h1 class="font-extrabold text-slate-900 text-base leading-none">HIELO MOSCÚ</h1>
+                <span class="text-xs font-semibold text-sky-600">Mapa de Rutas</span>
             </div>
-        </div>
-        <div class="text-xs font-medium text-slate-400">
-            <i class="fa-solid fa-circle-dot text-emerald-500 mr-1"></i>En línea
         </div>
     </header>
 
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
-
-        <!-- VISTA: MAPA DE RUTAS -->
-        <section id="view-mapa" class="tab-content space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Mapa de rutas</h2>
-                    <p class="text-slate-500 text-sm">Planeación y visualización de recorridos en tiempo real</p>
-                </div>
-                <!-- Selector de días interactivo -->
-                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0" id="dayFilterContainer">
-                    <button onclick="filterByDay('Todos', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white whitespace-nowrap shadow-sm">Todos</button>
-                    <button onclick="filterByDay('Lun', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Lun</button>
-                    <button onclick="filterByDay('Mar', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mar</button>
-                    <button onclick="filterByDay('Mié', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mié</button>
-                    <button onclick="filterByDay('Jue', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Jue</button>
-                    <button onclick="filterByDay('Vie', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Vie</button>
-                    <button onclick="filterByDay('Sáb', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Sáb</button>
-                    <button onclick="filterByDay('Dom', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Dom</button>
-                </div>
-            </div>
-
-            <!-- Métricas Clave -->
-            <div class="grid grid-cols-3 gap-3 md:gap-6">
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
-                        <i class="fa-solid fa-route"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs text-slate-400 font-medium block">Rutas Totales</span>
-                        <span class="text-lg font-bold text-slate-800">18</span>
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                        <i class="fa-solid fa-store"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs text-slate-400 font-medium block">Clientes</span>
-                        <span class="text-lg font-bold text-slate-800">63</span>
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
-                        <i class="fa-solid fa-eye"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs text-slate-400 font-medium block">Filtro Activo</span>
-                        <span class="text-lg font-bold text-slate-800" id="visibleCount">Todas</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Map Container -->
-            <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-                <div id="map" class="w-full h-[450px] rounded-xl z-10"></div>
-            </div>
-        </section>
-
-        <!-- VISTA: LISTA DE CLIENTES -->
-        <section id="view-clientes" class="tab-content hidden space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Lista de clientes</h2>
-                    <p class="text-slate-500 text-sm">Directorio completo con asignación de rutas y ubicación</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="relative flex-1 md:w-64">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                        <input type="text" placeholder="Buscar cliente, negocio o zona..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
-                    </div>
-                    <select class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 font-medium">
-                        <option>Ordenar por: Nombre</option>
-                        <option>Ordenar por: Zona</option>
-                        <option>Ordenar por: Ruta</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="space-y-3">
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
-                    <div class="space-y-1">
-                        <h3 class="font-bold text-slate-900 text-base">Abarrotes Lupita</h3>
-                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
-                            <i class="fa-solid fa-location-dot text-sky-500"></i> Nezahualcóyotl
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-600 border border-sky-100">Ruta 1 (Lun)</span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Ruta 2 (Lun)</span>
-                        <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
-                            <i class="fa-solid fa-eye text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
-                    <div class="space-y-1">
-                        <h3 class="font-bold text-slate-900 text-base">Cremería San Juan</h3>
-                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
-                            <i class="fa-solid fa-location-dot text-sky-500"></i> Chimalhuacán
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">Ruta 3 (Mar)</span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-600 border border-purple-100">Ruta 4 (Mar)</span>
-                        <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
-                            <i class="fa-solid fa-eye text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VISTA: GESTIÓN DE RUTAS -->
-        <section id="view-rutas" class="tab-content hidden space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Rutas programadas</h2>
-                    <p class="text-slate-500 text-sm">Configuración de zonas y días de atención</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs flex items-center gap-2 font-semibold">
-                        <i class="fa-solid fa-route text-sky-500"></i> 18 Rutas
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs flex items-center gap-2 font-semibold">
-                        <i class="fa-solid fa-map-pin text-indigo-500"></i> 6 Zonas
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full bg-amber-500"></div>
-                            <h3 class="font-bold text-slate-900 text-lg">RUTA 1</h3>
-                        </div>
-                        <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">Martes</span>
-                    </div>
-                    <div class="flex items-center gap-4 text-xs text-slate-500">
-                        <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> 18 clientes</span>
-                        <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> Zona: Nezahualcóyotl</span>
-                    </div>
-                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-                        <button onclick="switchTab('mapa')" class="flex-1 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-map"></i> Ver mapa
-                        </button>
-                        <button class="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-pen"></i> Editar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VISTA: AGREGAR CLIENTE -->
-        <section id="view-agregar" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-slate-900">Agregar cliente</h2>
-                <p class="text-slate-500 text-sm">Registro de nuevo punto de venta y asignación de enfriador</p>
+                <h2 class="text-2xl font-bold text-slate-900">Mapa de rutas</h2>
+                <p class="text-slate-500 text-sm">Visualización de recorridos por día</p>
             </div>
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                <button onclick="filterByDay('Todos', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white shadow-sm whitespace-nowrap">Todos</button>
+                <button onclick="filterByDay('Lun', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Lun</button>
+                <button onclick="filterByDay('Mar', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mar</button>
+                <button onclick="filterByDay('Mié', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mié</button>
+                <button onclick="filterByDay('Jue', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Jue</button>
+                <button onclick="filterByDay('Vie', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Vie</button>
+                <button onclick="filterByDay('Sáb', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Sáb</button>
+                <button onclick="filterByDay('Dom', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Dom</button>
+            </div>
+        </div>
 
-            <form class="space-y-6">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-user-gear"></i> Datos del cliente
-                    </h3>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre del negocio</label>
-                            <input type="text" value="Abarrotes La Esperanza" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Ubicación / Dirección</label>
-                            <input type="text" value="Av. Bordo de Xochiaca, Nezahualcóyotl" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="switchTab('clientes')" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all">Cancelar</button>
-                    <button type="button" onclick="switchTab('clientes')" class="flex-1 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-sky-600/30 transition-all">Guardar cliente</button>
-                </div>
-            </form>
-        </section>
-
+        <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+            <div id="map" class="w-full h-[450px] rounded-xl"></div>
+        </div>
     </main>
 
-    <!-- MOBILE BOTTOM NAVIGATION -->
+    <!-- NAVEGACIÓN MÓVIL INFERIOR -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around p-2 shadow-lg">
-        <button onclick="switchTab('mapa')" id="mob-mapa" class="flex flex-col items-center gap-1 p-2 text-sky-600 font-bold">
-            <i class="fa-solid fa-map text-lg"></i>
-            <span class="text-[10px]">Mapa</span>
-        </button>
-        <button onclick="switchTab('clientes')" id="mob-clientes" class="flex flex-col items-center gap-1 p-2 text-slate-400">
-            <i class="fa-solid fa-users text-lg"></i>
-            <span class="text-[10px]">Clientes</span>
-        </button>
-        <button onclick="switchTab('rutas')" id="mob-rutas" class="flex flex-col items-center gap-1 p-2 text-slate-400">
-            <i class="fa-solid fa-route text-lg"></i>
-            <span class="text-[10px]">Rutas</span>
-        </button>
-        <button onclick="switchTab('agregar')" id="mob-agregar" class="flex flex-col items-center gap-1 p-2 text-slate-400">
-            <i class="fa-solid fa-circle-plus text-lg"></i>
-            <span class="text-[10px]">Agregar</span>
-        </button>
+        <a href="index.html" class="flex flex-col items-center gap-1 p-2 text-sky-600 font-bold">
+            <i class="fa-solid fa-map text-lg"></i><span class="text-[10px]">Mapa</span>
+        </a>
+        <a href="clientes.html" class="flex flex-col items-center gap-1 p-2 text-slate-400">
+            <i class="fa-solid fa-users text-lg"></i><span class="text-[10px]">Clientes</span>
+        </a>
+        <a href="rutas.html" class="flex flex-col items-center gap-1 p-2 text-slate-400">
+            <i class="fa-solid fa-route text-lg"></i><span class="text-[10px]">Rutas</span>
+        </a>
+        <a href="agregar.html" class="flex flex-col items-center gap-1 p-2 text-slate-400">
+            <i class="fa-solid fa-circle-plus text-lg"></i><span class="text-[10px]">Agregar</span>
+        </a>
     </nav>
 
-    <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
-        let map = null;
-        let markersGroup = null;
+        let map = L.map('map').setView([19.4100, -98.9800], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
+        let markersGroup = L.layerGroup().addTo(map);
         const clientsData = [
             { lat: 19.4036, lng: -98.9892, title: "Abarrotes Lupita", route: "Ruta 1", day: "Lun" },
             { lat: 19.4150, lng: -98.9500, title: "Cremería San Juan", route: "Ruta 3", day: "Mar" },
@@ -310,87 +110,23 @@
             { lat: 19.4900, lng: -99.0200, title: "Farmacia Bienestar", route: "Ruta 15", day: "Dom" }
         ];
 
-        function initMap() {
-            if (map) return;
-            map = L.map('map').setView([19.4100, -98.9800], 11);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
-            }).addTo(map);
-
-            markersGroup = L.layerGroup().addTo(map);
-            renderMarkers('Todos');
-        }
-
-        function renderMarkers(selectedDay) {
-            if (!markersGroup) return;
+        function renderMarkers(day) {
             markersGroup.clearLayers();
-
-            const filtered = selectedDay === 'Todos' 
-                ? clientsData 
-                : clientsData.filter(c => c.day === selectedDay);
-
+            const filtered = day === 'Todos' ? clientsData : clientsData.filter(c => c.day === day);
             filtered.forEach(p => {
-                L.marker([p.lat, p.lng]).addTo(markersGroup)
-                    .bindPopup(`<b>${p.title}</b><br>${p.route} (${p.day})`);
+                L.marker([p.lat, p.lng]).addTo(markersGroup).bindPopup(`<b>${p.title}</b><br>${p.route} (${p.day})`);
             });
-
-            const visibleEl = document.getElementById('visibleCount');
-            if (visibleEl) visibleEl.innerText = selectedDay === 'Todos' ? 'Todas' : selectedDay;
         }
 
-        function filterByDay(day, btnElement) {
-            document.querySelectorAll('.day-btn').forEach(btn => {
-                btn.className = "day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap";
+        function filterByDay(day, btn) {
+            document.querySelectorAll('.day-btn').forEach(b => {
+                b.className = "day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap";
             });
-
-            if (btnElement) {
-                btnElement.className = "day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white whitespace-nowrap shadow-sm";
-            }
-
+            btn.className = "day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white shadow-sm whitespace-nowrap";
             renderMarkers(day);
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            
-            const target = document.getElementById('view-' + tabId);
-            if (target) target.classList.remove('hidden');
-
-            const titles = { 'mapa': 'Mapa', 'clientes': 'Clientes', 'rutas': 'Rutas', 'agregar': 'Agregar cliente' };
-            const titleEl = document.getElementById('mobileTabTitle');
-            if (titleEl) titleEl.innerText = titles[tabId] || 'Panel';
-
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-sky-600', 'text-white');
-                btn.classList.add('text-slate-400');
-            });
-            const activeSide = document.getElementById('side-' + tabId);
-            if (activeSide) {
-                activeSide.classList.add('bg-sky-600', 'text-white');
-                activeSide.classList.remove('text-slate-400');
-            }
-
-            ['mapa', 'clientes', 'rutas', 'agregar'].forEach(id => {
-                const mobBtn = document.getElementById('mob-' + id);
-                if (mobBtn) {
-                    mobBtn.className = id === tabId 
-                        ? "flex flex-col items-center gap-1 p-2 text-sky-600 font-bold" 
-                        : "flex flex-col items-center gap-1 p-2 text-slate-400";
-                }
-            });
-
-            if (tabId === 'mapa') {
-                setTimeout(() => {
-                    initMap();
-                    if (map) map.invalidateSize();
-                }, 100);
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initMap();
-            switchTab('mapa');
-        });
+        renderMarkers('Todos');
     </script>
 </body>
 </html>
