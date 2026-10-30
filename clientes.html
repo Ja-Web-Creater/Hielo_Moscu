@@ -18,7 +18,7 @@
                 </div>
                 <div>
                     <h1 class="text-sm font-bold leading-tight text-slate-900">Directorio</h1>
-                    <p class="text-[10px] text-slate-500 font-medium">Gestión de Clientes Registrados</p>
+                    <p class="text-[10px] text-slate-500 font-medium">Gestión de Clientes y Ubicaciones</p>
                 </div>
             </div>
             <a href="agregar.html" class="w-8 h-8 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center font-bold text-sm hover:bg-sky-100 transition-colors">
@@ -93,15 +93,24 @@
                                 ${cliente.ruta}
                             </span>
                         </div>
-                        <div class="flex items-center justify-between pt-1 border-t border-slate-50 text-[10px] text-slate-500">
-                            <span><i class="fa-solid fa-phone text-slate-400 mr-1"></i>${cliente.telefono || 'Sin teléfono'}</span>
-                            <span class="font-bold text-slate-700"><i class="fa-solid fa-calendar text-sky-500 mr-1"></i>${cliente.dia}</span>
-                            <button onclick="eliminarCliente(${cliente.id})" class="text-red-500 font-semibold hover:underline">
-                                <i class="fa-solid fa-trash"></i> Eliminar
-                            </button>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-50 text-[10px]">
+                            <span class="text-slate-500"><i class="fa-solid fa-calendar text-sky-500 mr-1"></i>${cliente.dia}</span>
+                            <div class="space-x-3">
+                                <button onclick="editarCliente(${cliente.id})" class="text-amber-600 font-bold hover:underline">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar Ubicación
+                                </button>
+                                <button onclick="eliminarCliente(${cliente.id})" class="text-red-500 font-semibold hover:underline">
+                                    <i class="fa-solid fa-trash"></i> Eliminar
+                                </button>
+                            </div>
                         </div>
                     </div>`;
             });
+        }
+
+        function editarCliente(id) {
+            localStorage.setItem('hielo_moscu_editar_id', id);
+            window.location.href = 'editar.html';
         }
 
         function eliminarCliente(id) {
