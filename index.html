@@ -3,14 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - Mapa de Rutas</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Hielo Moscú - Sistema de Rutas y Clientes</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Leaflet CSS & JS for OpenStreetMap Interactive Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -20,719 +15,531 @@
                             50: '#f0f7ff',
                             100: '#e0effe',
                             500: '#0284c7',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
-                            accent: '#0066ff'
-                        },
-                        route1: '#0055ff',
-                        route2: '#10b981'
+                            600: '#0369a1',
+                            700: '#0c4a6e',
+                            dark: '#0f172a'
+                        }
                     }
                 }
             }
         }
     </script>
+    <!-- Leaflet CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        #map {
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        /* Custom Leaflet Marker Styling */
-        .custom-route-marker {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            color: white;
-            font-weight: 700;
-            font-size: 11px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            border: 2px solid white;
-        }
-        .marker-r1 { background-color: #0055ff; }
-        .marker-r2 { background-color: #10b981; }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        /* Custom scrollbar & layout tweaks */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #map, #previewMap { min-height: 350px; z-index: 1; }
     </style>
 </head>
-<body class="h-screen flex flex-col md:flex-row overflow-hidden bg-slate-50 text-slate-800">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-20 md:pb-0 md:pl-64">
 
-    <!-- MAIN APP WRAPPER -->
-    <div class="flex-1 flex flex-col h-full w-full overflow-hidden">
-
-        <!-- HEADER TOP BAR (Desk & Mobile) -->
-        <header class="bg-white border-b border-slate-200 px-4 py-3 flex flex-wrap md:flex-nowrap items-center justify-between gap-3 shadow-sm z-20">
-            <!-- Logo & Title -->
-            <div class="flex items-center gap-3 min-w-max">
-                <div class="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center text-brand-600 text-2xl font-bold shadow-sm border border-brand-100">
-                    <i class="fa-solid fa-snowflake text-brand-600"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-extrabold text-lg tracking-tight text-slate-900 leading-none">HIELO</span>
-                        <span class="font-extrabold text-lg tracking-tight text-brand-600 leading-none">MOSCÚ</span>
-                    </div>
-                    <p class="text-xs text-slate-500 font-medium mt-0.5 hidden sm:block">Planeación y visualización de recorridos</p>
-                </div>
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-white fixed left-0 top-0 bottom-0 z-50 border-r border-slate-800">
+        <div class="p-5 flex items-center gap-3 border-b border-slate-800">
+            <div class="w-10 h-10 rounded-xl bg-sky-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
+                <i class="fa-solid fa-snowflake text-xl"></i>
             </div>
-
-            <!-- Search Input -->
-            <div class="flex-1 max-w-md mx-2">
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="globalSearch" onkeyup="handleGlobalSearch()" placeholder="Buscar cliente, ruta o dirección..." 
-                           class="w-full pl-10 pr-4 py-2 bg-slate-100/80 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
-                </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide text-white">HIELO MOSCÚ</h1>
+                <p class="text-xs text-slate-400">Panel Logístico v2.0</p>
             </div>
-
-            <!-- Action Buttons / User Menu -->
-            <div class="flex items-center gap-2">
-                <button onclick="toggleModal('coolersModal')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center gap-2">
-                    <i class="fa-solid fa-box text-brand-600"></i>
-                    <span class="hidden md:inline">Enfriadores</span>
-                </button>
-                <button onclick="toggleModal('cercaniaModal')" class="px-3 py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-semibold rounded-lg transition flex items-center gap-2 border border-brand-200">
-                    <i class="fa-solid fa-location-crosshairs text-brand-600"></i>
-                    <span class="hidden md:inline">Pedido Extra</span>
-                </button>
-                <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-sm ml-1">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-            </div>
-        </header>
-
-        <!-- DAY SELECTOR STRIP (Pill selector from design) -->
-        <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center gap-1.5 overflow-x-auto text-xs z-10 no-scrollbar">
-            <button onclick="filterByDay(1, this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-brand-600 text-white shadow-sm">
-                Lunes <span class="ml-1 opacity-75 text-[10px]">2 rutas</span>
-            </button>
-            <button onclick="filterByDay(2, this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">
-                Martes <span class="ml-1 text-slate-400 text-[10px]">2 rutas</span>
-            </button>
-            <button onclick="filterByDay(3, this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">
-                Miércoles <span class="ml-1 text-slate-400 text-[10px]">3 rutas</span>
-            </button>
-            <button onclick="filterByDay(4, this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">
-                Jueves <span class="ml-1 text-slate-400 text-[10px]">3 rutas</span>
-            </button>
-            <button onclick="filterByDay(5, this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">
-                Viernes <span class="ml-1 text-slate-400 text-[10px]">3 rutas</span>
-            </button>
-            <button onclick="filterByDay(6, this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">
-                Sábado <span class="ml-1 text-slate-400 text-[10px]">3 rutas</span>
-            </button>
-            <button onclick="filterByDay(7, this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">
-                Domingo <span class="ml-1 text-slate-400 text-[10px]">1 ruta</span>
-            </button>
-            <button onclick="filterByDay('ALL', this)" class="day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-slate-800 text-white hover:bg-slate-900 ml-auto">
-                Seleccionar todo
-            </button>
         </div>
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+            <button onclick="switchTab('mapa')" id="side-mapa" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-map text-lg w-6"></i> Mapa de rutas
+            </button>
+            <button onclick="switchTab('clientes')" id="side-clientes" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-users text-lg w-6"></i> Lista de Clientes
+            </button>
+            <button onclick="switchTab('rutas')" id="side-rutas" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-route text-lg w-6"></i> Gestión de Rutas
+            </button>
+            <button onclick="switchTab('agregar')" id="side-agregar" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-slate-400 hover:bg-slate-800 hover:text-white">
+                <i class="fa-solid fa-circle-plus text-lg w-6"></i> Agregar Cliente
+            </button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            MÁS QUE HIELO,<br>CONFIANZA EN TU RUTA
+        </div>
+    </aside>
 
-        <!-- MAIN CONTENT CONTAINER (MAP + SIDEBAR) -->
-        <div class="flex-1 flex flex-col md:flex-row relative overflow-hidden">
+    <!-- MOBILE HEADER -->
+    <header class="md:hidden bg-white border-b border-slate-200 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-sky-500 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+                <i class="fa-solid fa-snowflake text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-slate-900 tracking-tight leading-none text-base">HIELO MOSCÚ</h1>
+                <span id="mobileTabTitle" class="text-xs font-semibold text-sky-600">Mapa</span>
+            </div>
+        </div>
+        <div class="text-xs font-medium text-slate-400">
+            <i class="fa-solid fa-circle-dot text-emerald-500 mr-1"></i>En línea
+        </div>
+    </header>
 
-            <!-- SIDEBAR PANEL (Left on desktop, slide drawer on mobile) -->
-            <aside class="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col h-1/2 md:h-full z-10 shadow-lg md:shadow-none overflow-hidden transition-all">
-                
-                <!-- SUMMARY METRIC CARDS -->
-                <div class="p-4 border-b border-slate-100 bg-slate-50/50">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Resumen del día</h2>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                            <i class="fa-solid fa-route text-brand-600 text-xs mb-1"></i>
-                            <div id="metricRoutes" class="text-lg font-extrabold text-slate-800 leading-none">2</div>
-                            <div class="text-[10px] text-slate-500 font-medium mt-1">Rutas progr.</div>
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
+
+        <!-- VISTA: MAPA DE RUTAS -->
+        <section id="view-mapa" class="tab-content space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Mapa de rutas</h2>
+                    <p class="text-slate-500 text-sm">Planeación y visualización de recorridos en tiempo real</p>
+                </div>
+                <!-- Días Selector -->
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white whitespace-nowrap shadow-sm">Todos</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Lun</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mar</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mié</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Jue</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Vie</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Sáb</button>
+                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Dom</button>
+                </div>
+            </div>
+
+            <!-- Métricas Clave -->
+            <div class="grid grid-cols-3 gap-3 md:gap-6">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-route"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-medium block">Rutas</span>
+                        <span class="text-lg font-bold text-slate-800">18</span>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-medium block">Clientes</span>
+                        <span class="text-lg font-bold text-slate-800">63</span>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-medium block">Visibles</span>
+                        <span class="text-lg font-bold text-slate-800">2 Rutas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                <div id="map" class="w-full h-[450px] rounded-xl z-10"></div>
+            </div>
+        </section>
+
+        <!-- VISTA: LISTA DE CLIENTES -->
+        <section id="view-clientes" class="tab-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Lista de clientes</h2>
+                    <p class="text-slate-500 text-sm">Directorio completo con asignación de rutas y ubicación</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative flex-1 md:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" placeholder="Buscar cliente, negocio o zona..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <select class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 font-medium">
+                        <option>Ordenar por: Nombre</option>
+                        <option>Ordenar por: Zona</option>
+                        <option>Ordenar por: Ruta</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Listado Cards -->
+            <div class="space-y-3">
+                <!-- Cliente Item 1 -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-slate-900 text-base">Abarrotes Lupita</h3>
+                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-sky-500"></i> Nezahualcóyotl
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-600 border border-sky-100">Ruta 1 (Lunes)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Ruta 2 (Lunes)</span>
+                        <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
+                            <i class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cliente Item 2 -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-slate-900 text-base">Cremería San Juan</h3>
+                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-sky-500"></i> Chimalhuacán
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">Ruta 3 (Martes)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-600 border border-purple-100">Ruta 4 (Martes)</span>
+                        <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
+                            <i class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cliente Item 3 -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-slate-900 text-base">Miscelánea El Sol</h3>
+                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-sky-500"></i> Ecatepec
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">Ruta 5 (Miércoles)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-50 text-cyan-600 border border-cyan-100">Ruta 6 (Miércoles)</span>
+                        <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
+                            <i class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cliente Item 4 -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-slate-900 text-base">Frutas y Verduras La Paz</h3>
+                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-sky-500"></i> Nezahualcóyotl
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">Ruta 11 (Viernes)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-600 border border-sky-100">Ruta 12 (Viernes)</span>
+                        <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
+                            <i class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: GESTIÓN DE RUTAS -->
+        <section id="view-rutas" class="tab-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Rutas programadas</h2>
+                    <p class="text-slate-500 text-sm">Configuración de zonas y días de atención</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs flex items-center gap-2 font-semibold">
+                        <i class="fa-solid fa-route text-sky-500"></i> 18 Rutas
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs flex items-center gap-2 font-semibold">
+                        <i class="fa-solid fa-map-pin text-indigo-500"></i> 6 Zonas
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de Rutas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Ruta 1 Card -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full bg-amber-500"></div>
+                            <h3 class="font-bold text-slate-900 text-lg">RUTA 1</h3>
                         </div>
-                        <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                            <i class="fa-solid fa-users text-brand-600 text-xs mb-1"></i>
-                            <div id="metricClients" class="text-lg font-extrabold text-slate-800 leading-none">63</div>
-                            <div class="text-[10px] text-slate-500 font-medium mt-1">Clientes tot.</div>
+                        <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">Martes</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs text-slate-500">
+                        <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> 18 clientes</span>
+                        <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> Zona: Nezahualcóyotl</span>
+                    </div>
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                        <button onclick="switchTab('mapa')" class="flex-1 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-map"></i> Ver mapa
+                        </button>
+                        <button class="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ruta 2 Card -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full bg-purple-500"></div>
+                            <h3 class="font-bold text-slate-900 text-lg">RUTA 2</h3>
                         </div>
-                        <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm text-center">
-                            <i class="fa-solid fa-eye text-brand-600 text-xs mb-1"></i>
-                            <div id="metricVisible" class="text-lg font-extrabold text-slate-800 leading-none">2</div>
-                            <div class="text-[10px] text-slate-500 font-medium mt-1">Rutas visib.</div>
+                        <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">Jueves</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs text-slate-500">
+                        <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> 14 clientes</span>
+                        <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> Zona: Chimalhuacán</span>
+                    </div>
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                        <button onclick="switchTab('mapa')" class="flex-1 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-map"></i> Ver mapa
+                        </button>
+                        <button class="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ruta 3 Card -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full bg-sky-500"></div>
+                            <h3 class="font-bold text-slate-900 text-lg">RUTA 3</h3>
+                        </div>
+                        <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">Lunes</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs text-slate-500">
+                        <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> 21 clientes</span>
+                        <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> Zona: Ecatepec</span>
+                    </div>
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                        <button onclick="switchTab('mapa')" class="flex-1 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-map"></i> Ver mapa
+                        </button>
+                        <button class="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ruta 4 Card -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-4 h-4 rounded-full bg-slate-500"></div>
+                            <h3 class="font-bold text-slate-900 text-lg">RUTA 4</h3>
+                        </div>
+                        <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">Viernes</span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs text-slate-500">
+                        <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> 10 clientes</span>
+                        <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> Zona: CDMX Oriente</span>
+                    </div>
+                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+                        <button onclick="switchTab('mapa')" class="flex-1 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-map"></i> Ver mapa
+                        </button>
+                        <button class="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: AGREGAR CLIENTE -->
+        <section id="view-agregar" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900">Agregar cliente</h2>
+                <p class="text-slate-500 text-sm">Registro de nuevo punto de venta y asignación de enfriador</p>
+            </div>
+
+            <form class="space-y-6">
+                <!-- Datos del cliente -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear"></i> Datos del cliente
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre del negocio</label>
+                            <input type="text" value="Abarrotes La Esperanza" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Ubicación / Dirección</label>
+                            <input type="text" value="Av. Bordo de Xochiaca, Nezahualcóyotl" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                         </div>
                     </div>
                 </div>
 
-                <!-- SCROLLABLE SIDEBAR SECTION -->
-                <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                    
-                    <!-- RUTAS DEL DÍA -->
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Rutas del día</h3>
-                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold">Lunes</span>
-                        </div>
-                        <div id="routesList" class="space-y-2">
-                            <!-- Populated dynamically via Javascript -->
-                        </div>
-                    </div>
-
-                    <!-- OPTIONS DE VISUALIZACIÓN ACCORDION -->
-                    <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                        <button onclick="toggleVisibilityOptions()" class="w-full p-3 bg-slate-50 flex items-center justify-between text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
-                            <span class="flex items-center gap-2"><i class="fa-solid fa-sliders text-slate-400"></i> Opciones de visualización</span>
-                            <i id="optionsChevron" class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform"></i>
-                        </button>
-                        <div id="optionsContent" class="p-3 space-y-2.5 text-xs text-slate-600 border-t border-slate-100">
-                            <label class="flex items-center justify-between cursor-pointer">
-                                <span><i class="fa-solid fa-location-dot mr-1.5 text-slate-400"></i> Mostrar puntos</span>
-                                <input type="checkbox" id="chkShowPoints" checked onchange="updateMapLayers()" class="rounded text-brand-600 focus:ring-brand-500">
-                            </label>
-                            <label class="flex items-center justify-between cursor-pointer">
-                                <span><i class="fa-solid fa-draw-polygon mr-1.5 text-slate-400"></i> Mostrar líneas de recorrido</span>
-                                <input type="checkbox" id="chkShowLines" checked onchange="updateMapLayers()" class="rounded text-brand-600 focus:ring-brand-500">
-                            </label>
-                            <label class="flex items-center justify-between cursor-pointer">
-                                <span><i class="fa-solid fa-list-ol mr-1.5 text-slate-400"></i> Mostrar numeración</span>
-                                <input type="checkbox" id="chkShowNumbers" checked onchange="updateMapLayers()" class="rounded text-brand-600 focus:ring-brand-500">
-                            </label>
-                            <button onclick="fitMapToVisible()" class="w-full mt-2 py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 font-semibold rounded-lg text-xs transition border border-brand-200">
-                                <i class="fa-solid fa-expand mr-1"></i> Ajustar mapa a rutas visibles
+                <!-- Ubicación GPS -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-location-crosshairs"></i> Ubicación GPS
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="Pegar enlace de Google Maps" class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <button type="button" class="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-map-pin"></i> Ubicar
                             </button>
                         </div>
-                    </div>
-
-                    <!-- LISTA DE CLIENTES DE LA RUTA SELECCIONADA -->
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 id="selectedRouteTitle" class="text-xs font-bold text-slate-800 uppercase tracking-wider">Clientes de Ruta 1</h3>
-                            <span id="selectedRouteCount" class="text-xs font-semibold text-slate-500">36 clientes</span>
-                        </div>
-                        <div id="customersList" class="space-y-1.5">
-                            <!-- Populated dynamically via Javascript -->
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-center justify-between">
+                            <span><i class="fa-solid fa-circle-check text-emerald-500 mr-1.5"></i> Zona detectada: <strong>Nezahualcóyotl</strong></span>
                         </div>
                     </div>
-
                 </div>
 
-            </aside>
-
-            <!-- MAP CONTAINER (Fills remaining space) -->
-            <main class="flex-1 h-1/2 md:h-full relative">
-                <!-- Map Layer Toggle Floating Control -->
-                <div class="absolute top-3 left-3 z-[400] bg-white rounded-lg shadow-md border border-slate-200 p-1 flex items-center gap-1">
-                    <button id="btnMapStyleRoad" onclick="setMapStyle('road')" class="px-2.5 py-1 text-xs font-semibold rounded bg-brand-600 text-white shadow-sm">Mapa</button>
-                    <button id="btnMapStyleSat" onclick="setMapStyle('sat')" class="px-2.5 py-1 text-xs font-semibold rounded text-slate-600 hover:bg-slate-100">Satélite</button>
-                </div>
-
-                <!-- Leaflet Container -->
-                <div id="map"></div>
-            </main>
-
-        </div>
-
-    </div>
-
-    <!-- MODAL 1: CONTROL E INVENTARIO DE ENFRIADORES -->
-    <div id="coolersModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[1000] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="p-4 bg-slate-800 text-white flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-box text-brand-400"></i>
-                    <h3 class="font-bold text-sm">Inventario de Enfriadores - Hielo Moscú</h3>
-                </div>
-                <button onclick="toggleModal('coolersModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="p-4 border-b border-slate-100 flex gap-2">
-                <input type="text" id="coolerSearch" onkeyup="renderCoolersTable()" placeholder="Buscar por cliente, marca o num. de serie..." class="flex-1 px-3 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-lg">
-                <select id="coolerOwnershipFilter" onchange="renderCoolersTable()" class="px-3 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-lg font-medium">
-                    <option value="ALL">Todos los Tipos</option>
-                    <option value="Comodato Hielo Moscú">Comodato Hielo Moscú</option>
-                    <option value="Propiedad Cliente">Propiedad Cliente</option>
-                </select>
-            </div>
-            <div class="p-4 overflow-y-auto flex-1">
-                <table class="w-full text-xs text-left text-slate-600">
-                    <thead class="text-[10px] uppercase bg-slate-100 text-slate-500 font-bold">
-                        <tr>
-                            <th class="p-2">Cliente</th>
-                            <th class="p-2">Marca / Modelo</th>
-                            <th class="p-2">Serie</th>
-                            <th class="p-2">Propiedad</th>
-                            <th class="p-2">Estatus</th>
-                        </tr>
-                    </thead>
-                    <tbody id="coolersTableBody" class="divide-y divide-slate-100">
-                        <!-- Populated via Javascript -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 2: CALCULADORA DE CERCANÍA (PEDIDO EXTRA) -->
-    <div id="cercaniaModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[1000] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-            <div class="p-4 bg-brand-700 text-white flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-calculator text-brand-300"></i>
-                    <h3 class="font-bold text-sm">Asignar Pedido Extra por Cercanía</h3>
-                </div>
-                <button onclick="toggleModal('cercaniaModal')" class="text-brand-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="p-5 space-y-4">
-                <p class="text-xs text-slate-500">Ingresa la ubicación del pedido extra para calcular matemáticamente qué chofer o ruta del día se encuentra más cerca.</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Latitud</label>
-                        <input type="number" step="any" id="extraLat" value="19.4120" class="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-200 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Longitud</label>
-                        <input type="number" step="any" id="extraLng" value="-99.0180" class="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-200 rounded-lg">
+                <!-- Sugerencia de Ruta (Haversine) -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Sugerencia de ruta inteligente
+                    </h3>
+                    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-emerald-900 text-sm">Ruta sugerida: NEZA-03</span>
+                            <span class="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-extrabold rounded-full uppercase tracking-wider">Recomendada</span>
+                        </div>
+                        <p class="text-xs text-emerald-700 flex items-center gap-3">
+                            <span><i class="fa-solid fa-calendar-day"></i> Martes</span>
+                            <span><i class="fa-solid fa-location-dot"></i> Nezahualcóyotl</span>
+                            <span><i class="fa-solid fa-route"></i> A 320m de la ruta</span>
+                        </p>
                     </div>
                 </div>
-                <button onclick="useCurrentGPSForExtra()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-location-arrow text-brand-600"></i> Usar mi GPS Actual
-                </button>
-                <button onclick="calculateNearestRoute()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg shadow-md transition">
-                    Calcular Operador Más Cercano
-                </button>
-                <div id="nearestResult" class="hidden p-3 bg-brand-50 border border-brand-200 rounded-xl text-xs text-brand-900">
-                    <!-- Results populated dynamically -->
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- JAVASCRIPT APPLICATION LOGIC -->
+                <!-- Enfriador -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-box text-sky-600"></i> ¿Asignar Enfriador?
+                        </h3>
+                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <button type="button" class="px-3 py-1 bg-sky-600 text-white rounded-lg text-xs font-bold shadow-sm">Sí</button>
+                            <button type="button" class="px-3 py-1 text-slate-500 rounded-lg text-xs font-bold">No</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">No. Serie</label>
+                            <input type="text" value="SN-4587-20" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Capacidad</label>
+                            <input type="text" value="5,000 L" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="switchTab('clientes')" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all">Cancelar</button>
+                    <button type="button" onclick="switchTab('clientes')" class="flex-1 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-sky-600/30 transition-all">Guardar cliente</button>
+                </div>
+            </form>
+        </section>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around p-2 shadow-lg">
+        <button onclick="switchTab('mapa')" id="mob-mapa" class="flex flex-col items-center gap-1 p-2 text-sky-600 font-bold">
+            <i class="fa-solid fa-map text-lg"></i>
+            <span class="text-[10px]">Mapa</span>
+        </button>
+        <button onclick="switchTab('clientes')" id="mob-clientes" class="flex flex-col items-center gap-1 p-2 text-slate-400">
+            <i class="fa-solid fa-users text-lg"></i>
+            <span class="text-[10px]">Clientes</span>
+        </button>
+        <button onclick="switchTab('rutas')" id="mob-rutas" class="flex flex-col items-center gap-1 p-2 text-slate-400">
+            <i class="fa-solid fa-route text-lg"></i>
+            <span class="text-[10px]">Rutas</span>
+        </button>
+        <button onclick="switchTab('agregar')" id="mob-agregar" class="flex flex-col items-center gap-1 p-2 text-slate-400">
+            <i class="fa-solid fa-circle-plus text-lg"></i>
+            <span class="text-[10px]">Agregar</span>
+        </button>
+    </nav>
+
+    <!-- Leaflet JS for Maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ==========================================
-        // DATA MODEL & STATE
-        // ==========================================
-        const routesData = [
-            { id: 1, name: 'Ruta 1', weekday: 1, color: '#0055ff', count: 36, visible: true },
-            { id: 2, name: 'Ruta 2', weekday: 1, color: '#10b981', count: 27, visible: true },
-            { id: 3, name: 'Ruta 3', weekday: 2, color: '#f59e0b', count: 20, visible: true },
-            { id: 4, name: 'Ruta 4', weekday: 2, color: '#ef4444', count: 18, visible: true },
-            { id: 5, name: 'Ruta 5', weekday: 3, color: '#8b5cf6', count: 22, visible: true },
-            { id: 6, name: 'Ruta 6', weekday: 3, color: '#14b8a6', count: 15, visible: true },
-            { id: 7, name: 'Ruta 7', weekday: 3, color: '#f97316', count: 19, visible: true },
-            { id: 8, name: 'Ruta 8', weekday: 4, color: '#06b6d4', count: 25, visible: true },
-            { id: 9, name: 'Ruta 9', weekday: 4, color: '#ec4899', count: 14, visible: true },
-            { id: 10, name: 'Ruta 10', weekday: 4, color: '#64748b', count: 16, visible: true },
-            { id: 11, name: 'Ruta 11', weekday: 5, color: '#3b82f6', count: 30, visible: true },
-            { id: 12, name: 'Ruta 12', weekday: 5, color: '#10b981', count: 21, visible: true },
-            { id: 13, name: 'IXTAPALUCA', weekday: 5, color: '#a855f7', count: 17, visible: true },
-            { id: 14, name: 'Ruta 13', weekday: 6, color: '#f43f5e', count: 24, visible: true },
-            { id: 15, name: 'Ruta 14', weekday: 6, color: '#0284c7', count: 22, visible: true },
-            { id: 16, name: 'Ruta 15', weekday: 6, color: '#334155', count: 19, visible: true },
-            { id: 17, name: 'Ruta 16', weekday: 7, color: '#1e293b', count: 35, visible: true }
-        ];
+        let map = null;
 
-        const customersData = [
-            // RUTA 1 - LUNES
-            { id: 1, routeId: 1, visitOrder: 1, name: 'Abarrotes vinos y licores San Marcos', lat: 19.4050, lng: -99.0120, address: 'Av. Pantitlán #123' },
-            { id: 2, routeId: 1, visitOrder: 2, name: 'Abarrotes vinos y licores casa rojas', lat: 19.4080, lng: -99.0180, address: 'Calle 7 #45' },
-            { id: 3, routeId: 1, visitOrder: 3, name: 'Abarrotes Dan Don', lat: 19.4120, lng: -99.0220, address: 'Av. Chimalhuacán #889' },
-            { id: 4, routeId: 1, visitOrder: 4, name: 'Abarrotes vinos y licores Yeyo', lat: 19.4170, lng: -99.0250, address: 'Av. Tepozanes #21' },
-            { id: 5, routeId: 1, visitOrder: 5, name: 'Abarrotes y cremería Itzel', lat: 19.4220, lng: -99.0290, address: 'Calle Sor Juana #102' },
-            { id: 6, routeId: 1, visitOrder: 6, name: 'Mini super el ruso', lat: 19.4260, lng: -99.0340, address: 'Av. Carmelo Pérez #401' },
-            { id: 7, routeId: 1, visitOrder: 12, name: 'Super Kapa', lat: 19.4310, lng: -99.0390, address: 'Calle Netzahualcóyotl #55' },
-
-            // RUTA 2 - LUNES
-            { id: 8, routeId: 2, visitOrder: 1, name: 'Ultramarinos San Angel', lat: 19.3980, lng: -99.0050, address: 'Av. Villada #77' },
-            { id: 9, routeId: 2, visitOrder: 2, name: 'Monky Market', lat: 19.3940, lng: -98.9990, address: 'Calle Cuauhtémoc #12' },
-            { id: 10, routeId: 2, visitOrder: 3, name: 'Benavira 1', lat: 19.3890, lng: -98.9920, address: 'Av. Texcoco #300' },
-            { id: 11, routeId: 2, visitOrder: 4, name: 'Abarrotes y Cremería "Santiaguito"', lat: 19.3830, lng: -98.9850, address: 'Calle Zaragoza #8' }
-        ];
-
-        const coolersData = [
-            { id: 1, customerName: 'Abarrotes vinos y licores San Marcos', brand: 'Torrey', model: 'CRI-40', capacity: '400 Lts', serial: 'SER-998877', ownership: 'Comodato Hielo Moscú', status: 'Bueno' },
-            { id: 2, customerName: 'Abarrotes vinos y licores casa rojas', brand: 'Imbera', model: 'G326', capacity: '300 Lts', serial: 'SER-443322', ownership: 'Propiedad Cliente', status: 'Regular' },
-            { id: 3, customerName: 'Super Kapa', brand: 'Criotec', model: 'CF-25', capacity: '250 Lts', serial: 'SER-112233', ownership: 'Comodato Hielo Moscú', status: 'Bueno' }
-        ];
-
-        let currentDay = 1; // 1 = Lunes
-        let activeRouteId = 1;
-        let map, mapMarkers = [], mapPolylines = [];
-        let tileLayer;
-
-        // ==========================================
-        // INITIALIZATION
-        // ==========================================
-        window.onload = function() {
-            initMap();
-            renderRoutes();
-            renderCustomersList(1);
-            renderCoolersTable();
-        };
-
-        // Initialize Leaflet Map
+        // Init Leaflet Map safely
         function initMap() {
-            map = L.map('map', {
-                zoomControl: false
-            }).setView([19.4120, -99.0180], 13);
-
-            // Add Zoom Control to bottom right
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-            // Default tile layer
-            tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
+            if (map) return;
+            map = L.map('map').setView([19.4000, -99.0000], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
             }).addTo(map);
 
-            renderMapMarkersAndLines();
+            // Add demo markers
+            const points = [
+                { lat: 19.4036, lng: -98.9892, title: "Abarrotes Lupita", route: "Ruta 1" },
+                { lat: 19.4150, lng: -98.9500, title: "Cremería San Juan", route: "Ruta 2" },
+                { lat: 19.5000, lng: -99.0300, title: "Miscelánea El Sol", route: "Ruta 3" }
+            ];
+
+            points.forEach(p => {
+                L.marker([p.lat, p.lng]).addTo(map)
+                    .bindPopup(`<b>${p.title}</b><br>${p.route}`);
+            });
         }
 
-        function setMapStyle(style) {
-            if (style === 'road') {
-                tileLayer.setUrl('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-                document.getElementById('btnMapStyleRoad').className = 'px-2.5 py-1 text-xs font-semibold rounded bg-brand-600 text-white shadow-sm';
-                document.getElementById('btnMapStyleSat').className = 'px-2.5 py-1 text-xs font-semibold rounded text-slate-600 hover:bg-slate-100';
-            } else {
-                tileLayer.setUrl('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-                document.getElementById('btnMapStyleSat').className = 'px-2.5 py-1 text-xs font-semibold rounded bg-brand-600 text-white shadow-sm';
-                document.getElementById('btnMapStyleRoad').className = 'px-2.5 py-1 text-xs font-semibold rounded text-slate-600 hover:bg-slate-100';
-            }
-        }
-
-        // ==========================================
-        // MAP RENDERING ENGINE
-        // ==========================================
-        function renderMapMarkersAndLines() {
-            // Clear existing layers
-            mapMarkers.forEach(m => map.removeLayer(m));
-            mapPolylines.forEach(p => map.removeLayer(p));
-            mapMarkers = [];
-            mapPolylines = [];
-
-            const showPoints = document.getElementById('chkShowPoints').checked;
-            const showLines = document.getElementById('chkShowLines').checked;
-            const showNumbers = document.getElementById('chkShowNumbers').checked;
-
-            const visibleRoutes = routesData.filter(r => (currentDay === 'ALL' || r.weekday === currentDay) && r.visible);
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             
-            visibleRoutes.forEach(route => {
-                const routeCustomers = customersData.filter(c => c.routeId === route.id)
-                                                    .sort((a,b) => a.visitOrder - b.visitOrder);
+            // Show target tab
+            const target = document.getElementById('view-' + tabId);
+            if (target) target.classList.remove('hidden');
 
-                if (routeCustomers.length === 0) return;
+            // Update mobile header title
+            const titles = { 'mapa': 'Mapa', 'clientes': 'Clientes', 'rutas': 'Rutas', 'agregar': 'Agregar cliente' };
+            const titleEl = document.getElementById('mobileTabTitle');
+            if (titleEl) titleEl.innerText = titles[tabId] || 'Panel';
 
-                const latLngs = routeCustomers.map(c => [c.lat, c.lng]);
-
-                // Draw Polyline Line
-                if (showLines && latLngs.length > 1) {
-                    const polyline = L.polyline(latLngs, {
-                        color: route.color,
-                        weight: 4,
-                        opacity: 0.8,
-                        dashArray: '6, 8'
-                    }).addTo(map);
-                    mapPolylines.push(polyline);
-                }
-
-                // Draw Custom Numbered Markers
-                if (showPoints) {
-                    routeCustomers.forEach(customer => {
-                        const markerClass = route.id === 1 ? 'marker-r1' : 'marker-r2';
-                        const iconHtml = showNumbers ? customer.visitOrder : '';
-
-                        const customIcon = L.divIcon({
-                            className: 'custom-div-icon',
-                            html: `<div class="custom-route-marker w-6 h-6" style="background-color: ${route.color}">${iconHtml}</div>`,
-                            iconSize: [24, 24],
-                            iconAnchor: [12, 12]
-                        });
-
-                        const popupHtml = `
-                            <div class="p-1 font-sans">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${route.color}"></span>
-                                    <h4 class="font-bold text-sm text-slate-900">${customer.name}</h4>
-                                </div>
-                                <p class="text-xs text-slate-500 font-semibold">${route.name} - ${getDayName(route.weekday)}</p>
-                                <p class="text-xs text-slate-600 mt-1">Orden de visita: <strong>#${customer.visitOrder}</strong></p>
-                                <div class="mt-3 pt-2 border-t border-slate-100 flex flex-col gap-1.5">
-                                    <a href="https://www.google.com/maps/search/?api=1&query=${customer.lat},${customer.lng}" target="_blank" 
-                                       class="w-full text-center px-2 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded flex items-center justify-center gap-1">
-                                        <i class="fa-solid fa-location-arrow"></i> Cómo llegar en Google Maps
-                                    </a>
-                                    <button onclick="updateCustomerGPS(${customer.id})" 
-                                            class="w-full px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded">
-                                        📍 Actualizar GPS a 1 toque
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-
-                        const marker = L.marker([customer.lat, customer.lng], { icon: customIcon })
-                                        .bindPopup(popupHtml)
-                                        .addTo(map);
-
-                        mapMarkers.push(marker);
-                    });
-                }
+            // Active State for Desktop Sidebar
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white');
+                btn.classList.add('text-slate-400');
             });
-        }
-
-        // ==========================================
-        // UI RENDERERS
-        // ==========================================
-        function renderRoutes() {
-            const container = document.getElementById('routesList');
-            container.innerHTML = '';
-
-            const dayRoutes = routesData.filter(r => currentDay === 'ALL' || r.weekday === currentDay);
-
-            // Update Metrics
-            document.getElementById('metricRoutes').innerText = dayRoutes.length;
-            document.getElementById('metricVisible').innerText = dayRoutes.filter(r => r.visible).length;
-
-            let totalClients = 0;
-            dayRoutes.forEach(r => totalClients += r.count);
-            document.getElementById('metricClients').innerText = totalClients;
-
-            dayRoutes.forEach(route => {
-                const card = document.createElement('div');
-                card.className = `p-3 rounded-xl border transition flex items-center justify-between cursor-pointer ${activeRouteId === route.id ? 'bg-brand-50/60 border-brand-300' : 'bg-white border-slate-200 hover:border-slate-300'}`;
-                
-                card.innerHTML = `
-                    <div class="flex items-center gap-3" onclick="selectRoute(${route.id})">
-                        <span class="w-3.5 h-3.5 rounded-full shadow-sm" style="background-color: ${route.color}"></span>
-                        <div>
-                            <div class="font-bold text-xs text-slate-800">${route.name}</div>
-                            <div class="text-[10px] text-slate-500 font-medium">${route.count} clientes</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <button onclick="toggleRouteVisibility(${route.id}, event)" class="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 text-xs">
-                            <i class="fa-solid ${route.visible ? 'fa-eye text-brand-600' : 'fa-eye-slash text-slate-300'}"></i>
-                        </button>
-                        <button onclick="selectRoute(${route.id})" class="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 text-xs">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderCustomersList(routeId) {
-            const container = document.getElementById('customersList');
-            container.innerHTML = '';
-
-            const route = routesData.find(r => r.id === routeId) || routesData[0];
-            document.getElementById('selectedRouteTitle').innerText = `Clientes de ${route.name}`;
-
-            const filteredCustomers = customersData.filter(c => c.routeId === routeId)
-                                                   .sort((a,b) => a.visitOrder - b.visitOrder);
-
-            document.getElementById('selectedRouteCount').innerText = `${filteredCustomers.length} clientes`;
-
-            filteredCustomers.forEach(c => {
-                const item = document.createElement('div');
-                item.className = 'p-2.5 bg-white border border-slate-100 hover:border-slate-300 rounded-xl flex items-center justify-between text-xs transition';
-                
-                item.innerHTML = `
-                    <div class="flex items-center gap-2.5 overflow-hidden pr-2">
-                        <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 font-bold text-[10px] flex items-center justify-center shrink-0">
-                            ${c.visitOrder}
-                        </span>
-                        <span class="font-semibold text-slate-700 truncate">${c.name}</span>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}" target="_blank" 
-                           class="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 text-brand-600 flex items-center justify-center transition" title="Abrir Mapa">
-                            <i class="fa-solid fa-location-dot"></i>
-                        </a>
-                        <button onclick="focusOnCustomer(${c.lat}, ${c.lng})" class="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition">
-                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        // ==========================================
-        // EVENT HANDLERS & FILTERS
-        // ==========================================
-        function filterByDay(day, btnElement) {
-            currentDay = day;
-            document.querySelectorAll('.day-btn').forEach(btn => {
-                btn.className = 'day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-slate-200 border border-slate-200';
-            });
-            btnElement.className = 'day-btn px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-brand-600 text-white shadow-sm';
-
-            const activeDayRoute = routesData.find(r => day === 'ALL' || r.weekday === day);
-            if (activeDayRoute) {
-                activeRouteId = activeDayRoute.id;
+            const activeSide = document.getElementById('side-' + tabId);
+            if (activeSide) {
+                activeSide.classList.add('bg-sky-600', 'text-white');
+                activeSide.classList.remove('text-slate-400');
             }
 
-            renderRoutes();
-            renderCustomersList(activeRouteId);
-            renderMapMarkersAndLines();
-            fitMapToVisible();
-        }
-
-        function selectRoute(routeId) {
-            activeRouteId = routeId;
-            renderRoutes();
-            renderCustomersList(routeId);
-        }
-
-        function toggleRouteVisibility(routeId, event) {
-            event.stopPropagation();
-            const route = routesData.find(r => r.id === routeId);
-            if (route) {
-                route.visible = !route.visible;
-                renderRoutes();
-                renderMapMarkersAndLines();
-            }
-        }
-
-        function toggleVisibilityOptions() {
-            const content = document.getElementById('optionsContent');
-            const chevron = document.getElementById('optionsChevron');
-            content.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
-        }
-
-        function updateMapLayers() {
-            renderMapMarkersAndLines();
-        }
-
-        function focusOnCustomer(lat, lng) {
-            map.setView([lat, lng], 16, { animate: true });
-        }
-
-        function fitMapToVisible() {
-            if (mapMarkers.length > 0) {
-                const group = L.featureGroup(mapMarkers);
-                map.fitBounds(group.getBounds().pad(0.1));
-            }
-        }
-
-        function getDayName(weekday) {
-            const days = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-            return days[weekday] || '';
-        }
-
-        // Global Search
-        function handleGlobalSearch() {
-            const query = document.getElementById('globalSearch').value.toLowerCase();
-            if (query.length < 2) return;
-
-            const found = customersData.find(c => c.name.toLowerCase().includes(query));
-            if (found) {
-                focusOnCustomer(found.lat, found.lng);
-            }
-        }
-
-        // ==========================================
-        // MODALS & SPECIAL FEATURES
-        // ==========================================
-        function toggleModal(modalId) {
-            document.getElementById(modalId).classList.toggle('hidden');
-        }
-
-        function renderCoolersTable() {
-            const query = document.getElementById('coolerSearch').value.toLowerCase();
-            const filter = document.getElementById('coolerOwnershipFilter').value;
-            const tbody = document.getElementById('coolersTableBody');
-            tbody.innerHTML = '';
-
-            const filtered = coolersData.filter(c => {
-                const matchesQuery = c.customerName.toLowerCase().includes(query) || c.serial.toLowerCase().includes(query) || c.brand.toLowerCase().includes(query);
-                const matchesFilter = filter === 'ALL' || c.ownership === filter;
-                return matchesQuery && matchesFilter;
-            });
-
-            filtered.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
-                tr.innerHTML = `
-                    <td class="p-2 font-semibold text-slate-800">${item.customerName}</td>
-                    <td class="p-2">${item.brand} / ${item.model}</td>
-                    <td class="p-2 font-mono text-[10px]">${item.serial}</td>
-                    <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.ownership.includes('Hielo Moscú') ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${item.ownership}</span></td>
-                    <td class="p-2"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">${item.status}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function useCurrentGPSForExtra() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    document.getElementById('extraLat').value = pos.coords.latitude.toFixed(4);
-                    document.getElementById('extraLng').value = pos.coords.longitude.toFixed(4);
-                });
-            }
-        }
-
-        // Haversine Distance Calculation
-        function calculateNearestRoute() {
-            const lat = parseFloat(document.getElementById('extraLat').value);
-            const lng = parseFloat(document.getElementById('extraLng').value);
-
-            let minDistance = Infinity;
-            let nearestCustomer = null;
-
-            customersData.forEach(c => {
-                const d = haversineDistance(lat, lng, c.lat, c.lng);
-                if (d < minDistance) {
-                    minDistance = d;
-                    nearestCustomer = c;
+            // Active State for Mobile Nav
+            ['mapa', 'clientes', 'rutas', 'agregar'].forEach(id => {
+                const mobBtn = document.getElementById('mob-' + id);
+                if (mobBtn) {
+                    if (id === tabId) {
+                        mobBtn.className = "flex flex-col items-center gap-1 p-2 text-sky-600 font-bold";
+                    } else {
+                        mobBtn.className = "flex flex-col items-center gap-1 p-2 text-slate-400";
+                    }
                 }
             });
 
-            const resultDiv = document.getElementById('nearestResult');
-            resultDiv.classList.remove('hidden');
-
-            if (nearestCustomer) {
-                const route = routesData.find(r => r.id === nearestCustomer.routeId);
-                resultDiv.innerHTML = `
-                    <div class="font-bold mb-1"> Operador / Ruta Más Cercana:</div>
-                    <div><strong>${route.name}</strong> - ${nearestCustomer.name}</div>
-                    <div class="text-[10px] opacity-75 mt-1">Distancia estimada: ${minDistance.toFixed(2)} km</div>
-                `;
+            // If switching to Map tab, recalculate map container size
+            if (tabId === 'mapa') {
+                setTimeout(() => {
+                    initMap();
+                    if (map) map.invalidateSize();
+                }, 100);
             }
         }
 
-        function haversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        function updateCustomerGPS(customerId) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    alert(`UBICACIÓN ACTUALIZADA:\nNuevas coordenadas registradas para el cliente en la base de datos:\nLat: ${pos.coords.latitude}, Lng: ${pos.coords.longitude}`);
-                });
-            }
-        }
+        // Load Map on Start
+        window.addEventListener('DOMContentLoaded', () => {
+            initMap();
+            switchTab('mapa');
+        });
     </script>
 </body>
 </html>
