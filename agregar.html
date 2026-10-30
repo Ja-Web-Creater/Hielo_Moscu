@@ -3,237 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - Registro Nacional</title>
+    <title>Hielo Moscú - Agregar Cliente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 pb-24">
+<body class="bg-slate-50 text-slate-800 pb-24 md:pb-8">
 
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-100 px-4 py-3 sticky top-0 z-50">
-        <div class="flex items-center justify-between max-w-md mx-auto">
-            <div class="flex items-center space-x-2">
-                <div class="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-sky-500/20">
-                    <i class="fa-solid fa-earth-americas text-lg"></i>
+    <div class="max-w-xl md:max-w-3xl mx-auto min-h-screen bg-white shadow-xl md:my-6 md:rounded-3xl overflow-hidden flex flex-col">
+        
+        <!-- Header -->
+        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-tr from-sky-600 to-blue-400 rounded-2xl flex items-center justify-center text-white shadow-md shadow-sky-500/30">
+                    <i class="fa-solid fa-mountain text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm font-bold leading-tight text-slate-900">Hielo Moscú</h1>
-                    <p class="text-[10px] text-slate-500 font-medium">Cobertura Nacional México</p>
+                    <h1 class="text-lg font-black text-blue-950 tracking-tight leading-none">HIELO MOSCÚ</h1>
+                    <p class="text-xs font-semibold text-sky-600 mt-0.5">Agregar cliente</p>
                 </div>
             </div>
-            <span class="text-[10px] font-bold bg-sky-50 text-sky-600 px-2.5 py-1 rounded-full border border-sky-100">
-                <i class="fa-solid fa-globe mr-1"></i> Modo Nacional
+            <span class="text-[9px] font-bold text-slate-400 text-right uppercase tracking-wider block">
+                MÁS QUE HIELO,<br>CONFIANZA EN TU RUTA
             </span>
-        </div>
-    </header>
+        </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-4">
-        <form id="clienteForm" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3.5">
-            
-            <!-- Datos del Cliente -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-store text-sky-500 mr-1"></i> Nombre del Negocio / Cliente *</label>
-                <input type="text" id="nombre" required placeholder="Ej. Abarrotes del Norte" class="input-field">
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-phone text-sky-500 mr-1"></i> Teléfono</label>
-                    <input type="tel" id="telefono" placeholder="Ej. 5512345678" class="input-field">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-city text-sky-500 mr-1"></i> Estado / Ciudad *</label>
-                    <input type="text" id="estado" required placeholder="Ej. CDMX, Jalisco, Monterrey..." class="input-field">
-                </div>
-            </div>
-
-            <!-- Buscador Universal con Autocompletado de Direcciones para todo México -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-magnifying-glass-location text-sky-500 mr-1"></i> Buscar Dirección en México *</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="direccion" required placeholder="Calle, Número, Colonia, CP..." class="input-field">
-                    <button type="button" onclick="buscarUbicacionNacional()" class="px-4 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 transition-colors shrink-0 shadow-sm">
-                        <i class="fa-solid fa-search"></i> Buscar
-                    </button>
-                </div>
-                <span class="text-[10px] text-slate-400 mt-1 block">Escribe la dirección en cualquier parte de la República y da clic en Buscar.</span>
-            </div>
-
-            <!-- Mapa GPS Nacional Dinámico -->
-            <div class="p-3 bg-sky-50/60 rounded-xl border border-sky-100 space-y-2">
-                <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-bold text-sky-900"><i class="fa-solid fa-map-location-dot text-sky-600 mr-1"></i> Mapa Satelital Activo</span>
-                    <button type="button" onclick="obtenerGpsDispositivo()" class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg hover:bg-emerald-200 transition-colors">
-                        <i class="fa-solid fa-crosshairs mr-1"></i> Mi Ubicación GPS
-                    </button>
-                </div>
+        <!-- Formulario -->
+        <main class="p-5 space-y-5 flex-1">
+            <form id="formAgregar" class="space-y-4">
                 
-                <div id="previewMap" class="w-full h-64 rounded-xl border border-slate-200"></div>
-                <p class="text-[10px] text-slate-600 text-center font-medium bg-white p-2 rounded-lg border border-slate-200">
-                    🌍 Puedes mover el mapa libremente por todo México y arrastrar el pin al punto exacto.
-                </p>
-            </div>
+                <!-- 1. Datos del Cliente -->
+                <div class="space-y-3">
+                    <h2 class="text-xs font-bold text-blue-950 flex items-center">
+                        <i class="fa-solid fa-user text-sky-500 mr-2"></i> Datos del cliente
+                    </h2>
+                    
+                    <div class="space-y-2">
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2">
+                            <i class="fa-solid fa-store text-slate-400 text-xs mr-3"></i>
+                            <span class="text-[11px] font-bold text-blue-950 w-32 shrink-0">Nombre del negocio</span>
+                            <input type="text" id="nombre" required placeholder="Abarrotes La Esperanza" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none">
+                        </div>
 
-            <!-- Asignación Logística -->
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-truck-ramp-box text-sky-500 mr-1"></i> Ruta Asignada *</label>
-                    <select id="ruta" required class="input-field">
-                        <option value="Ruta 1">Ruta 1</option>
-                        <option value="Ruta 2">Ruta 2</option>
-                        <option value="Ruta 3">Ruta 3</option>
-                        <option value="Ruta 4">Ruta 4</option>
-                    </select>
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2">
+                            <i class="fa-solid fa-location-dot text-slate-400 text-xs mr-3"></i>
+                            <span class="text-[11px] font-bold text-blue-950 w-32 shrink-0">Ubicación</span>
+                            <input type="text" id="ubicacionTexto" required placeholder="Av. Bordo de Xochiaca, Nezahualcóyotl" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none">
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-calendar-day text-sky-500 mr-1"></i> Día de Entrega *</label>
-                    <select id="dia" required class="input-field">
-                        <option value="Lunes">Lunes</option>
-                        <option value="Martes">Martes</option>
-                        <option value="Miercoles">Miércoles</option>
-                        <option value="Jueves">Jueves</option>
-                        <option value="Viernes">Viernes</option>
-                        <option value="Sabado">Sábado</option>
-                    </select>
+
+                <!-- 2. Ubicación GPS / Mapa -->
+                <div class="space-y-3">
+                    <h2 class="text-xs font-bold text-blue-950 flex items-center">
+                        <i class="fa-solid fa-map-pin text-sky-500 mr-2"></i> Ubicación
+                    </h2>
+
+                    <div class="flex space-x-2">
+                        <div class="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2">
+                            <i class="fa-solid fa-link text-slate-400 text-xs mr-2"></i>
+                            <input type="text" id="linkGmaps" placeholder="Pegar enlace de Google Maps" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none">
+                        </div>
+                        <button type="button" onclick="ubicarEnMapa()" class="px-3 py-2 bg-sky-50 text-sky-700 border border-sky-100 rounded-2xl text-xs font-bold flex items-center space-x-1.5 hover:bg-sky-100">
+                            <i class="fa-solid fa-map"></i>
+                            <span>Ubicar en mapa</span>
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+                        <div class="flex items-start space-x-2">
+                            <i class="fa-solid fa-location-dot text-sky-600 text-sm mt-0.5"></i>
+                            <div>
+                                <h4 class="text-xs font-bold text-blue-950" id="direccionLabel">Av. Bordo de Xochiaca, Nezahualcóyotl</h4>
+                                <p class="text-[10px] text-slate-400">Zona detectada: Nezahualcóyotl</p>
+                            </div>
+                        </div>
+                        
+                        <div id="mapaPreview" class="w-full h-36 rounded-xl border border-slate-200 overflow-hidden"></div>
+                    </div>
                 </div>
+
+                <!-- 3. Sugerencia de Ruta -->
+                <div class="space-y-3">
+                    <h2 class="text-xs font-bold text-blue-950 flex items-center">
+                        <i class="fa-solid fa-route text-sky-500 mr-2"></i> Sugerencia de ruta
+                    </h2>
+
+                    <div class="bg-sky-50/60 p-3.5 rounded-2xl border border-sky-100 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-5 h-5 rounded-full bg-amber-500"></div>
+                                <span class="text-xs font-bold text-blue-950">Ruta sugerida: NEZA-03</span>
+                            </div>
+                            <span class="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full">
+                                ★ Recomendada
+                            </span>
+                        </div>
+
+                        <div class="flex items-center space-x-4 text-[11px] text-slate-600 font-medium">
+                            <span><i class="fa-regular fa-calendar text-sky-600 mr-1"></i> Martes</span>
+                            <span><i class="fa-solid fa-location-dot text-sky-600 mr-1"></i> Nezahualcóyotl</span>
+                            <span><i class="fa-solid fa-location-arrow text-sky-600 mr-1"></i> A 320 m de la ruta</span>
+                        </div>
+
+                        <div class="space-y-1.5 pt-1 border-t border-sky-100">
+                            <div class="flex items-center justify-between text-xs py-1 px-2 rounded-xl bg-white/80">
+                                <span class="font-bold text-purple-700">CHI-02</span>
+                                <span class="text-slate-500"><i class="fa-regular fa-calendar mr-1"></i> Jueves</span>
+                                <span class="text-slate-500"><i class="fa-solid fa-location-arrow mr-1"></i> 1.1 km</span>
+                                <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                            </div>
+                            <div class="flex items-center justify-between text-xs py-1 px-2 rounded-xl bg-white/80">
+                                <span class="font-bold text-indigo-700">CDMX-04</span>
+                                <span class="text-slate-500"><i class="fa-regular fa-calendar mr-1"></i> Viernes</span>
+                                <span class="text-slate-500"><i class="fa-solid fa-location-arrow mr-1"></i> 2.0 km</span>
+                                <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1 text-xs">
+                            <span class="font-bold text-blue-950">Posición sugerida en la ruta</span>
+                            <span class="font-bold text-sky-600">Después de: Abarrotes Lupita <i class="fa-solid fa-chevron-right text-xs"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Enfriador -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xs font-bold text-blue-950 flex items-center">
+                            <i class="fa-solid fa-snowflake text-sky-500 mr-2"></i> Enfriador
+                        </h2>
+                        <div class="bg-slate-100 p-0.5 rounded-xl flex text-xs font-bold">
+                            <button type="button" class="px-4 py-1 bg-sky-500 text-white rounded-lg shadow-sm">Sí</button>
+                            <button type="button" class="px-4 py-1 text-slate-500">No</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
+                            <span class="block text-[10px] font-bold text-slate-400">No. Serie</span>
+                            <input type="text" value="SN-4587-20" class="w-full bg-transparent text-xs font-bold text-blue-950 focus:outline-none mt-0.5">
+                        </div>
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
+                            <span class="block text-[10px] font-bold text-slate-400">Capacidad de enfriado</span>
+                            <input type="text" value="5,000 L" class="w-full bg-transparent text-xs font-bold text-blue-950 focus:outline-none mt-0.5">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
+                        <span class="block text-[10px] font-bold text-slate-400">Marca / Modelo</span>
+                        <input type="text" value="Polar Cool 5000" class="w-full bg-transparent text-xs font-bold text-blue-950 focus:outline-none mt-0.5">
+                    </div>
+                </div>
+
+                <!-- 5. Notas -->
+                <div class="space-y-2">
+                    <h2 class="text-xs font-bold text-blue-950 flex items-center">
+                        <i class="fa-solid fa-note-sticky text-sky-500 mr-2"></i> Notas
+                    </h2>
+                    <div class="relative bg-slate-50 border border-slate-200 rounded-2xl p-3">
+                        <textarea id="notas" rows="2" maxlength="250" placeholder="Recibe de preferencia antes de las 12:00 pm" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none resize-none">Recibe de preferencia antes de las 12:00 pm</textarea>
+                        <span class="absolute bottom-2 right-3 text-[10px] text-slate-400 font-medium">40/250</span>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex space-x-3 pt-2">
+                    <a href="clientes.html" class="w-1/3 py-3 text-center bg-slate-100 text-sky-600 font-bold rounded-2xl text-xs hover:bg-slate-200 transition-colors">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="w-2/3 py-3 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-2xl text-xs transition-colors shadow-lg shadow-sky-500/30 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Guardar cliente</span>
+                    </button>
+                </div>
+
+            </form>
+        </main>
+
+        <!-- Navegación -->
+        <nav class="sticky md:relative bottom-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-3 px-6 mt-auto">
+            <div class="max-w-md mx-auto flex justify-between items-center">
+                <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
+                    <i class="fa-solid fa-map text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Mapa</span>
+                </a>
+                <a href="clientes.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
+                    <i class="fa-solid fa-users text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Clientes</span>
+                </a>
+                <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
+                    <i class="fa-solid fa-route text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Rutas</span>
+                </a>
+                <a href="agregar.html" class="flex flex-col items-center text-sky-600 font-bold">
+                    <div class="w-8 h-8 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-md shadow-sky-500/30">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                    </div>
+                    <span class="text-[10px] mt-1">Agregar</span>
+                </a>
+                <a href="#" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
+                    <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                    <span class="text-[10px] font-medium mt-1">Buscar</span>
+                </a>
             </div>
-
-            <!-- Campos Ocultos de Coordenadas -->
-            <input type="hidden" id="latitud" value="19.432600">
-            <input type="hidden" id="longitud" value="-99.133200">
-
-            <button type="submit" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-sky-600/20 active:scale-[0.98]">
-                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Guardar Cliente y Registrar Ruta
-            </button>
-        </form>
-    </main>
-
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 py-2 px-4 z-50">
-        <div class="max-w-md mx-auto flex justify-around items-center">
-            <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
-                <i class="fa-solid fa-map text-base"></i>
-                <span class="text-[10px] font-medium mt-1">Mapa</span>
-            </a>
-            <a href="clientes.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
-                <i class="fa-solid fa-users text-base"></i>
-                <span class="text-[10px] font-medium mt-1">Clientes</span>
-            </a>
-            <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
-                <i class="fa-solid fa-route text-base"></i>
-                <span class="text-[10px] font-medium mt-1">Rutas</span>
-            </a>
-            <a href="agregar.html" class="flex flex-col items-center text-sky-600">
-                <i class="fa-solid fa-circle-plus text-base"></i>
-                <span class="text-[10px] font-bold mt-1">Agregar</span>
-            </a>
-        </div>
-    </nav>
+        </nav>
+    </div>
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
-        // Coordenadas iniciales neutrales en el centro del país (CDMX)
-        let latSel = 19.432600, lngSel = -99.133200;
-
-        const previewMap = L.map('previewMap').setView([latSel, lngSel], 6); // Zoom nacional abierto (6)
+        const map = L.map('mapaPreview').setView([19.412530, -99.018240], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
             attribution: '&copy; OpenStreetMap'
-        }).addTo(previewMap);
+        }).addTo(map);
 
-        let marker = L.marker([latSel, lngSel], { draggable: true }).addTo(previewMap);
+        L.marker([19.412530, -99.018240]).addTo(map);
 
-        function guardarCoordenadas(lat, lng) {
-            latSel = lat;
-            lngSel = lng;
-            document.getElementById('latitud').value = lat;
-            document.getElementById('longitud').value = lng;
+        function ubicarEnMapa() {
+            alert('📍 Mapa centrado en la ubicación.');
         }
 
-        marker.on('dragend', function(e) {
-            const pos = e.target.getLatLng();
-            guardarCoordenadas(pos.lat, pos.lng);
-        });
-
-        previewMap.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            guardarCoordenadas(e.latlng.lat, e.latlng.lng);
-        });
-
-        // Geolocalización satelital del dispositivo en cualquier parte del país
-        function obtenerGpsDispositivo() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        previewMap.flyTo([lat, lng], 16, { animate: true });
-                        marker.setLatLng([lat, lng]);
-                        guardarCoordenadas(lat, lng);
-                        alert('📍 GPS detectado en tu ubicación actual.');
-                    },
-                    function(error) {
-                        alert('No se pudo acceder al GPS del dispositivo.');
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            }
-        }
-
-        // Buscador Nacional Abierto (Funciona para cualquier estado de la República Mexicana)
-        async function buscarUbicacionNacional() {
-            const dir = document.getElementById('direccion').value;
-            const edo = document.getElementById('estado').value;
-
-            if (!dir) return alert('Escribe una dirección para buscar.');
-
-            // Construir la consulta abierta para México
-            const query = `${dir}, ${edo}, México`;
-            
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-                const data = await res.json();
-
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lng = parseFloat(data[0].lon);
-
-                    // Hacer zoom fluido a la ubicación encontrada en cualquier estado
-                    previewMap.flyTo([lat, lng], 16, { animate: true, duration: 1.5 });
-                    marker.setLatLng([lat, lng]);
-                    guardarCoordenadas(lat, lng);
-                } else {
-                    alert('No se encontró exactamente esa dirección. Puedes mover el mapa libremente por el país y colocar el pin donde gustes.');
-                }
-            } catch (err) {
-                alert('Error de conexión con el buscador nacional. Puedes ubicar el punto directamente en el mapa.');
-            }
-        }
-
-        // Guardar cliente nacional
-        document.getElementById('clienteForm').addEventListener('submit', function(e) {
+        document.getElementById('formAgregar').addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const nuevoCliente = {
-                id: Date.now(),
-                nombre: document.getElementById('nombre').value,
-                telefono: document.getElementById('telefono').value,
-                estado: document.getElementById('estado').value,
-                direccion: document.getElementById('direccion').value,
-                ruta: document.getElementById('ruta').value,
-                dia: document.getElementById('dia').value,
-                lat: parseFloat(document.getElementById('latitud').value),
-                lng: parseFloat(document.getElementById('longitud').value)
-            };
-
-            const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-            clientes.push(nuevoCliente);
-            localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
-
-            alert('✅ ¡Cliente registrado con éxito en el sistema nacional!');
-            window.location.href = 'index.html';
+            alert('✅ ¡Cliente guardado exitosamente!');
+            window.location.href = 'clientes.html';
         });
     </script>
 </body>
