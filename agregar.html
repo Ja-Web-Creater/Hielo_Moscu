@@ -44,13 +44,13 @@
                         <div class="flex items-center bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2">
                             <i class="fa-solid fa-store text-slate-400 text-xs mr-3"></i>
                             <span class="text-[11px] font-bold text-blue-950 w-32 shrink-0">Nombre del negocio</span>
-                            <input type="text" id="nombre" required placeholder="Ej. Abarrotes La Esperanza" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none">
+                            <input type="text" id="nombre" name="nombre" required placeholder="Ej. Abarrotes La Esperanza" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none">
                         </div>
 
                         <div class="flex items-center bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2">
                             <i class="fa-solid fa-location-dot text-slate-400 text-xs mr-3"></i>
                             <span class="text-[11px] font-bold text-blue-950 w-32 shrink-0">Ubicación / Dirección</span>
-                            <input type="text" id="ubicacionTexto" required placeholder="Ej. Av. Bordo de Xochiaca" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none">
+                            <input type="text" id="ubicacionTexto" name="ubicacionTexto" required placeholder="Ej. Av. Bordo de Xochiaca" class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none">
                         </div>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                     <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
                         <div class="flex items-center justify-between text-xs">
                             <span class="font-bold text-blue-950">Toca el mapa para fijar el pin exacto</span>
-                            <button type="button" onclick="centrarGpsActual()" class="text-sky-600 font-bold hover:underline">
+                            <button type="button" onclick="centrarGpsActual()" class="text-sky-600 font-bold hover:underline cursor-pointer">
                                 <i class="fa-solid fa-crosshairs mr-1"></i> Mi GPS
                             </button>
                         </div>
@@ -76,7 +76,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-blue-950 mb-1">Ruta Asignada</label>
-                        <select id="ruta" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs font-bold text-blue-950 focus:outline-none focus:border-sky-500">
+                        <select id="ruta" name="ruta" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs font-bold text-blue-950 focus:outline-none focus:border-sky-500 cursor-pointer">
                             <option value="Ruta 1">Ruta 1 (Neza)</option>
                             <option value="Ruta 2">Ruta 2 (Chimalhuacán)</option>
                             <option value="Ruta 3">Ruta 3 (Ecatepec)</option>
@@ -85,7 +85,7 @@
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-blue-950 mb-1">Día de Entrega</label>
-                        <select id="dia" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs font-bold text-blue-950 focus:outline-none focus:border-sky-500">
+                        <select id="dia" name="dia" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-xs font-bold text-blue-950 focus:outline-none focus:border-sky-500 cursor-pointer">
                             <option value="Lunes">Lunes</option>
                             <option value="Martes">Martes</option>
                             <option value="Miercoles">Miércoles</option>
@@ -107,11 +107,11 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
                             <span class="block text-[10px] font-bold text-slate-400">No. Serie</span>
-                            <input type="text" id="serie" placeholder="Ej. SN-4587" class="w-full bg-transparent text-xs font-bold text-blue-950 focus:outline-none mt-0.5">
+                            <input type="text" id="serie" name="serie" placeholder="Ej. SN-4587" class="w-full bg-transparent text-xs font-bold text-blue-950 focus:outline-none mt-0.5">
                         </div>
                         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
                             <span class="block text-[10px] font-bold text-slate-400">Capacidad</span>
-                            <input type="text" id="capacidad" placeholder="Ej. 5,000 L" class="w-full bg-transparent text-xs font-bold text-blue-950 focus:outline-none mt-0.5">
+                            <input type="text" id="capacidad" name="capacidad" placeholder="Ej. 5,000 L" class="w-full bg-transparent text-xs font-bold text-blue-950 focus:outline-none mt-0.5">
                         </div>
                     </div>
                 </div>
@@ -122,17 +122,17 @@
                         <i class="fa-solid fa-note-sticky text-sky-500 mr-2"></i> Notas
                     </h2>
                     <div class="relative bg-slate-50 border border-slate-200 rounded-2xl p-3">
-                        <textarea id="notas" rows="2" maxlength="250" placeholder="Instrucciones de entrega..." class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none resize-none"></textarea>
+                        <textarea id="notas" name="notas" rows="2" maxlength="250" placeholder="Instrucciones de entrega..." class="w-full bg-transparent text-xs font-medium text-slate-800 focus:outline-none resize-none"></textarea>
                     </div>
                 </div>
 
                 <!-- Campos Ocultos de Coordenadas -->
-                <input type="hidden" id="latitud" value="19.412530">
-                <input type="hidden" id="longitud" value="-99.018240">
+                <input type="hidden" id="latitud" name="latitud" value="19.412530">
+                <input type="hidden" id="longitud" name="longitud" value="-99.018240">
 
                 <!-- Botones de Acción -->
                 <div class="flex space-x-3 pt-2">
-                    <a href="clientes.html" class="w-1/3 py-3 text-center bg-slate-100 text-sky-600 font-bold rounded-2xl text-xs hover:bg-slate-200 transition-colors">
+                    <a href="clientes.html" class="w-1/3 py-3 text-center bg-slate-100 text-sky-600 font-bold rounded-2xl text-xs hover:bg-slate-200 transition-colors flex items-center justify-center">
                         Cancelar
                     </a>
                     <button type="submit" class="w-2/3 py-3 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-2xl text-xs transition-colors shadow-lg shadow-sky-500/30 flex items-center justify-center space-x-2 cursor-pointer">
@@ -169,7 +169,7 @@
         </nav>
     </div>
 
-    <!-- Leaflet JS y Lógica de Alta -->
+    <!-- Leaflet JS y Lógica de Conexión AJAX con PHP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
         let latSel = 19.412530, lngSel = -99.018240;
@@ -213,29 +213,29 @@
             }
         }
 
-        // Manejar el guardado limpio en localStorage
+        // Envío del formulario mediante AJAX hacia el archivo guardar_cliente.php (MySQL)
         document.getElementById('formAgregar').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const nuevoCliente = {
-                id: Date.now(),
-                nombre: document.getElementById('nombre').value.trim(),
-                direccion: document.getElementById('ubicacionTexto').value.trim(),
-                ruta: document.getElementById('ruta').value,
-                dia: document.getElementById('dia').value,
-                serie: document.getElementById('serie').value.trim(),
-                capacidad: document.getElementById('capacidad').value.trim(),
-                notas: document.getElementById('notas').value.trim(),
-                lat: parseFloat(document.getElementById('latitud').value),
-                lng: parseFloat(document.getElementById('longitud').value)
-            };
+            const formData = new FormData(this);
 
-            const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-            clientes.push(nuevoCliente);
-            localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
-
-            alert('✅ ¡Cliente registrado con éxito!');
-            window.location.href = 'clientes.html';
+            fetch('guardar_cliente.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ¡Cliente guardado exitosamente en MySQL!');
+                    window.location.href = 'clientes.html';
+                } else {
+                    alert('❌ Error al guardar: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un problema al conectar con el servidor.');
+            });
         });
     </script>
 </body>
