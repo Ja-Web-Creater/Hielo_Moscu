@@ -35,7 +35,7 @@
             <!-- Datos del Cliente -->
             <div>
                 <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-store text-sky-500 mr-1"></i> Nombre del Negocio / Cliente *</label>
-                <input type="text" id="nombre" required placeholder="Ej. Abarrotes La Guadalupana" class="input-field">
+                <input type="text" id="nombre" required placeholder="Ej. Tiendas 3B Cuauhtémoc" class="input-field">
             </div>
 
             <div class="grid grid-cols-2 gap-2">
@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-map-location-dot text-sky-500 mr-1"></i> Estado / Ciudad *</label>
-                    <input type="text" id="estado" required value="Estado de México" placeholder="Ej. CDMX, Jalisco..." class="input-field">
+                    <input type="text" id="estado" required value="Estado de México" placeholder="Ej. CDMX, Estado de México..." class="input-field">
                 </div>
             </div>
 
@@ -53,26 +53,27 @@
             <div>
                 <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> Dirección Exacta de Entrega *</label>
                 <div class="flex space-x-2">
-                    <input type="text" id="direccion" required placeholder="Calle, Número, Colonia o Municipio" class="input-field">
-                    <button type="button" onclick="buscarDireccionNacional()" class="px-3 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 transition-colors shrink-0">
-                        <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="direccion" required placeholder="Ej. Av Cuauhtémoc 70, Pavon, Nezahualcóyotl" class="input-field">
+                    <button type="button" onclick="buscarDireccionNacional()" class="px-3.5 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 transition-colors shrink-0 shadow-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> Buscar
                     </button>
                 </div>
+                <span class="text-[10px] text-slate-400 mt-1 block">Escribe la dirección y da clic en "Buscar" para enfocar el mapa automáticamente.</span>
             </div>
 
             <!-- Sensor GPS Satelital y Controles -->
             <div class="p-3 bg-sky-50/60 rounded-xl border border-sky-100 space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-bold text-sky-900"><i class="fa-solid fa-satellite-dish text-sky-600 mr-1"></i> Ubicación GPS Satelital</span>
+                    <span class="text-[11px] font-bold text-sky-900"><i class="fa-solid fa-satellite-dish text-sky-600 mr-1"></i> Ubicación GPS en Mapa</span>
                     <button type="button" onclick="obtenerGpsNativo()" class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg hover:bg-emerald-200 transition-colors">
-                        <i class="fa-solid fa-crosshairs mr-1"></i> Usar mi GPS Actual
+                        <i class="fa-solid fa-crosshairs mr-1"></i> Mi GPS Actual
                     </button>
                 </div>
                 
                 <!-- Mapa Universal con Pin Arrastrable -->
                 <div id="previewMap" class="w-full h-60 rounded-xl border border-slate-200"></div>
                 <p class="text-[10px] text-slate-500 text-center font-medium">
-                    <i class="fa-solid fa-hand-pointer text-sky-500 mr-1"></i> Arrastra el marcador o toca el mapa para fijar la entrada exacta.
+                    <i class="fa-solid fa-hand-pointer text-sky-500 mr-1"></i> Arrastra el marcador azul o toca el mapa para afinar el punto exacto.
                 </p>
             </div>
 
@@ -81,10 +82,10 @@
                 <div>
                     <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-truck-ramp-box text-sky-500 mr-1"></i> Ruta Asignada *</label>
                     <select id="ruta" required class="input-field">
-                        <option value="Ruta 1">Ruta 1</option>
-                        <option value="Ruta 2">Ruta 2</option>
-                        <option value="Ruta 3">Ruta 3</option>
-                        <option value="Ruta 4">Ruta 4</option>
+                        <option value="Ruta 1">Ruta 1 (Neza Centro)</option>
+                        <option value="Ruta 2">Ruta 2 (Neza Norte)</option>
+                        <option value="Ruta 3">Ruta 3 (Neza Oriente)</option>
+                        <option value="Ruta 4">Ruta 4 (Neza Poniente)</option>
                     </select>
                 </div>
                 <div>
@@ -100,7 +101,7 @@
                 </div>
             </div>
 
-            <!-- Campos Internos de Registro GPS -->
+            <!-- Campos Ocultos de Coordenadas -->
             <input type="hidden" id="latitud" value="19.412530">
             <input type="hidden" id="longitud" value="-99.018240">
 
@@ -134,10 +135,10 @@
     <!-- Leaflet JS Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
+        // Coordenadas iniciales en Nezahualcóyotl (Av. Cuauhtémoc)
         let latSel = 19.412530, lngSel = -99.018240;
 
-        // Inicialización del Mapa con tiles universales de alta velocidad
-        const previewMap = L.map('previewMap').setView([latSel, lngSel], 14);
+        const previewMap = L.map('previewMap').setView([latSel, lngSel], 15);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap'
@@ -163,34 +164,35 @@
             guardarCoordenadas(e.latlng.lat, e.latlng.lng);
         });
 
-        // 1. GPS Satelital Nativo (Sensado de alta precisión en todo México)
+        // GPS Satelital Nativo
         function obtenerGpsNativo() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        previewMap.setView([lat, lng], 17);
+                        previewMap.flyTo([lat, lng], 17, { animate: true });
                         marker.setLatLng([lat, lng]);
                         guardarCoordenadas(lat, lng);
-                        alert('📍 GPS detectado con éxito en tu posición actual.');
+                        alert('📍 GPS detectado con éxito.');
                     },
                     function(error) {
-                        alert('No se pudo acceder al GPS satelital. Asegúrate de otorgar permisos de ubicación en tu navegador.');
+                        alert('No se pudo acceder al GPS.');
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             }
         }
 
-        // 2. Buscador de Direcciones para todo México
+        // Buscador Nacional con Zoom Dinámico (FlyTo)
         async function buscarDireccionNacional() {
             const dir = document.getElementById('direccion').value;
             const edo = document.getElementById('estado').value;
 
-            if (!dir) return alert('Escribe la dirección a buscar.');
+            if (!dir) return alert('Escribe la dirección exacta en el campo.');
 
             const query = `${dir}, ${edo}, México`;
+            
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
                 const data = await res.json();
@@ -198,18 +200,24 @@
                 if (data && data.length > 0) {
                     const lat = parseFloat(data[0].lat);
                     const lng = parseFloat(data[0].lon);
-                    previewMap.setView([lat, lng], 16);
+
+                    // EFECTO DE ZOOM SUAVE AL PUNTO ENCONTRADO
+                    previewMap.flyTo([lat, lng], 17, {
+                        animate: true,
+                        duration: 1.5
+                    });
+
                     marker.setLatLng([lat, lng]);
                     guardarCoordenadas(lat, lng);
                 } else {
-                    alert('Dirección aproximada. Puedes ajustar la ubicación exacta tocando el mapa.');
+                    alert('No se encontró la dirección exacta por texto. Toca directamente sobre el mapa para fijar el punto.');
                 }
             } catch (err) {
-                alert('Búsqueda completada. Toca el mapa para afinar la entrada del local.');
+                alert('Error al conectar con el buscador. Toca el mapa para fijar la ubicación.');
             }
         }
 
-        // Guardar cliente con datos de GPS registrados
+        // Guardar cliente
         document.getElementById('clienteForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -229,7 +237,7 @@
             clientes.push(nuevoCliente);
             localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
 
-            alert('✅ ¡Ubicación GPS guardada con éxito en el sistema!');
+            alert('✅ ¡Cliente y su ubicación GPS guardados con éxito!');
             window.location.href = 'index.html';
         });
     </script>
