@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - Agregar Cliente</title>
+    <title>Hielo Moscú - Registrar Cliente</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -11,69 +11,105 @@
 </head>
 <body class="bg-slate-50 text-slate-800 pb-24">
 
+    <!-- Header -->
     <header class="bg-white border-b border-slate-100 px-4 py-3 sticky top-0 z-50">
         <div class="flex items-center justify-between max-w-md mx-auto">
             <div class="flex items-center space-x-2">
                 <div class="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-sky-500/20">
-                    <i class="fa-solid fa-circle-plus text-lg"></i>
+                    <i class="fa-solid fa-user-plus text-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-sm font-bold leading-tight text-slate-900">Nuevo Registro</h1>
-                    <p class="text-[10px] text-slate-500 font-medium">Alta de Cliente y Ubicación</p>
+                    <p class="text-[10px] text-slate-500 font-medium">Alta de Cliente y Ubicación de Entrega</p>
                 </div>
             </div>
         </div>
     </header>
 
+    <!-- Formulario Principal -->
     <main class="max-w-md mx-auto p-4 space-y-4">
-        <form class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3" onsubmit="event.preventDefault(); alert('Cliente registrado con éxito');">
+        <form id="clienteForm" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3.5">
             
+            <!-- Nombre del Cliente -->
             <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">Nombre del Negocio / Cliente</label>
-                <input type="text" required placeholder="Ej. Tienda Don Pepe" class="input-field">
+                <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-store text-sky-500 mr-1"></i> Nombre del Negocio / Cliente *</label>
+                <input type="text" id="nombre" required placeholder="Ej. Abarrotes La Esperanza" class="input-field">
             </div>
 
+            <!-- Teléfono -->
             <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">Teléfono de Contacto</label>
-                <input type="tel" placeholder="Ej. 5512345678" class="input-field">
+                <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-phone text-sky-500 mr-1"></i> Teléfono de Contacto</label>
+                <input type="tel" id="telefono" placeholder="Ej. 5512345678" class="input-field">
             </div>
 
+            <!-- Dirección de Entrega -->
             <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">Día de Visita / Reparto</label>
-                <select class="input-field">
-                    <option value="">Selecciona un día</option>
-                    <option value="Lunes">Lunes</option>
-                    <option value="Martes">Martes</option>
-                    <option value="Miercoles">Miércoles</option>
-                    <option value="Jueves">Jueves</option>
-                    <option value="Viernes">Viernes</option>
-                    <option value="Sabado">Sábado</option>
-                </select>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> Dirección Completa de Entrega *</label>
+                <input type="text" id="direccion" required placeholder="Ej. Av. Juárez #123, Col. Centro" class="input-field">
             </div>
 
-            <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">Selecciona Ubicación en el Mapa</label>
-                <div id="previewMap" class="w-full h-52 rounded-xl border border-slate-100 mb-2"></div>
-                <p class="text-[10px] text-slate-400 text-center">Toca el mapa para fijar las coordenadas GPS del cliente.</p>
+            <!-- Asignación de Ruta y Día -->
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-truck-ramp-box text-sky-500 mr-1"></i> Asignar Ruta *</label>
+                    <select id="ruta" required class="input-field">
+                        <option value="Ruta 1">Ruta 1 (Norte)</option>
+                        <option value="Ruta 2">Ruta 2 (Sur)</option>
+                        <option value="Ruta 3">Ruta 3 (Oriente)</option>
+                        <option value="Ruta 4">Ruta 4 (Poniente)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-calendar-day text-sky-500 mr-1"></i> Día de Entrega *</label>
+                    <select id="dia" required class="input-field">
+                        <option value="Lunes">Lunes</option>
+                        <option value="Martes">Martes</option>
+                        <option value="Miercoles">Miércoles</option>
+                        <option value="Jueves">Jueves</option>
+                        <option value="Viernes">Viernes</option>
+                        <option value="Sabado">Sábado</option>
+                    </select>
+                </div>
             </div>
 
-            <button type="submit" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs transition-colors shadow-md shadow-sky-600/20 mt-2">
-                Guardar Cliente
+            <!-- Captura de Ubicación GPS / Mapa -->
+            <div class="space-y-2 pt-1">
+                <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-bold text-slate-700"><i class="fa-solid fa-map-pin text-sky-500 mr-1"></i> Coordenadas de Ubicación *</label>
+                    <button type="button" id="btnGps" onclick="obtenerUbicacionActual()" class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-lg hover:bg-sky-100 transition-colors">
+                        <i class="fa-solid fa-location-crosshairs mr-1"></i> Usar mi GPS Actual
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="latitud" readonly placeholder="Latitud" class="input-field text-xs bg-slate-100 text-slate-500">
+                    <input type="text" id="longitud" readonly placeholder="Longitud" class="input-field text-xs bg-slate-100 text-slate-500">
+                </div>
+
+                <!-- Mapa interactivo -->
+                <div id="previewMap" class="w-full h-56 rounded-xl border border-slate-200"></div>
+                <p class="text-[10px] text-slate-400 text-center">Toca sobre el mapa para ajustar el punto exacto de recepción de hielo.</p>
+            </div>
+
+            <!-- Botón de Guardado -->
+            <button type="submit" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-sky-600/20 active:scale-[0.98]">
+                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Registrar Cliente y Guardar Ruta
             </button>
         </form>
     </main>
 
+    <!-- Barra de Navegación -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 py-2 px-4 z-50">
         <div class="max-w-md mx-auto flex justify-around items-center">
-            <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+            <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                 <i class="fa-solid fa-map text-base"></i>
                 <span class="text-[10px] font-medium mt-1">Mapa</span>
             </a>
-            <a href="clientes.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+            <a href="clientes.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                 <i class="fa-solid fa-users text-base"></i>
                 <span class="text-[10px] font-medium mt-1">Clientes</span>
             </a>
-            <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+            <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                 <i class="fa-solid fa-route text-base"></i>
                 <span class="text-[10px] font-medium mt-1">Rutas</span>
             </a>
@@ -84,21 +120,83 @@
         </div>
     </nav>
 
+    <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
-        const previewMap = L.map('previewMap').setView([19.4326, -99.1332], 13);
+        // Coordenadas base (Ciudad de México o zona central)
+        let latSel = 19.4326;
+        let lngSel = -99.1332;
+
+        const previewMap = L.map('previewMap').setView([latSel, lngSel], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+            attribution: '&copy; OpenStreetMap'
         }).addTo(previewMap);
 
-        let marker;
-        previewMap.on('click', function(e) {
-            const { lat, lng } = e.latlng;
-            if (marker) {
-                marker.setLatLng([lat, lng]);
+        let marker = L.marker([latSel, lngSel], { draggable: true }).addTo(previewMap);
+
+        function actualizarInputs(lat, lng) {
+            document.getElementById('latitud').value = lat.toFixed(6);
+            document.getElementById('longitud').value = lng.toFixed(6);
+            latSel = lat;
+            lngSel = lng;
+        }
+
+        actualizarInputs(latSel, lngSel);
+
+        // Actualizar al arrastrar el marcador
+        marker.on('dragend', function (e) {
+            const pos = e.target.getLatLng();
+            actualizarInputs(pos.lat, pos.lng);
+        });
+
+        // Actualizar al hacer clic en el mapa
+        previewMap.on('click', function (e) {
+            marker.setLatLng(e.latlng);
+            actualizarInputs(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Geolocalización GPS del dispositivo
+        function obtenerUbicacionActual() {
+            const btn = document.getElementById('btnGps');
+            if ("geolocation" in navigator) {
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"></i> Obteniendo GPS...';
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    previewMap.setView([lat, lng], 16);
+                    marker.setLatLng([lat, lng]);
+                    actualizarInputs(lat, lng);
+                    btn.innerHTML = '<i class="fa-solid fa-check text-emerald-600 mr-1"></i> Ubicación Ubicada';
+                }, function(error) {
+                    alert('No se pudo acceder al GPS. Puedes hacer clic directo en el mapa.');
+                    btn.innerHTML = '<i class="fa-solid fa-location-crosshairs mr-1"></i> Reintentar GPS';
+                });
             } else {
-                marker = L.marker([lat, lng]).addTo(previewMap);
+                alert('Tu dispositivo no soporta geolocalización automática.');
             }
+        }
+
+        // Guardar cliente en LocalStorage
+        document.getElementById('clienteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const clienteNuevo = {
+                id: Date.now(),
+                nombre: document.getElementById('nombre').value,
+                telefono: document.getElementById('telefono').value,
+                direccion: document.getElementById('direccion').value,
+                ruta: document.getElementById('ruta').value,
+                dia: document.getElementById('dia').value,
+                lat: parseFloat(document.getElementById('latitud').value),
+                lng: parseFloat(document.getElementById('longitud').value)
+            };
+
+            const clientesExistentes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
+            clientesExistentes.push(clienteNuevo);
+            localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientesExistentes));
+
+            alert('✅ ¡Cliente registrado con éxito y asignado a ' + clienteNuevo.ruta + ' (' + clienteNuevo.dia + ')!');
+            window.location.href = 'index.html';
         });
     </script>
 </body>

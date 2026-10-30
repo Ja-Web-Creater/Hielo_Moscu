@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - Clientes</title>
+    <title>Hielo Moscú - Directorio de Clientes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -18,7 +18,7 @@
                 </div>
                 <div>
                     <h1 class="text-sm font-bold leading-tight text-slate-900">Directorio</h1>
-                    <p class="text-[10px] text-slate-500 font-medium">Gestión de Clientes</p>
+                    <p class="text-[10px] text-slate-500 font-medium">Gestión de Clientes Registrados</p>
                 </div>
             </div>
             <a href="agregar.html" class="w-8 h-8 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center font-bold text-sm hover:bg-sky-100 transition-colors">
@@ -34,23 +34,19 @@
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                 <i class="fa-solid fa-magnifying-glass text-xs"></i>
             </span>
-            <input type="text" placeholder="Buscar cliente por nombre o zona..." class="input-field pl-9 text-xs">
+            <input type="text" id="buscador" onkeyup="filtrarClientes()" placeholder="Buscar cliente por nombre o dirección..." class="input-field pl-9 text-xs">
         </div>
 
-        <!-- Estado Vacío -->
-        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
-            <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <i class="fa-solid fa-users-slash text-xl"></i>
-            </div>
-            <h3 class="text-xs font-bold text-slate-800">No hay clientes registrados</h3>
-            <p class="text-[11px] text-slate-500 mt-1">Usa el botón superior derecho (+) para agregar tu primer cliente al sistema.</p>
+        <!-- Lista de Clientes -->
+        <div id="lista-clientes" class="space-y-3">
+            <!-- Se llena mediante JavaScript -->
         </div>
 
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 py-2 px-4 z-50">
         <div class="max-w-md mx-auto flex justify-around items-center">
-            <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+            <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                 <i class="fa-solid fa-map text-base"></i>
                 <span class="text-[10px] font-medium mt-1">Mapa</span>
             </a>
@@ -58,16 +54,74 @@
                 <i class="fa-solid fa-users text-base"></i>
                 <span class="text-[10px] font-bold mt-1">Clientes</span>
             </a>
-            <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+            <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                 <i class="fa-solid fa-route text-base"></i>
                 <span class="text-[10px] font-medium mt-1">Rutas</span>
             </a>
-            <a href="agregar.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+            <a href="agregar.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                 <i class="fa-solid fa-circle-plus text-base"></i>
                 <span class="text-[10px] font-medium mt-1">Agregar</span>
             </a>
         </div>
     </nav>
 
+    <script>
+        function cargarClientes() {
+            const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
+            const contenedor = document.getElementById('lista-clientes');
+
+            if (clientes.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
+                        <i class="fa-solid fa-users-slash text-3xl text-slate-300 mb-2"></i>
+                        <h3 class="text-xs font-bold text-slate-800">No hay clientes registrados</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">Presiona el botón (+) para registrar un nuevo cliente.</p>
+                    </div>`;
+                return;
+            }
+
+            contenedor.innerHTML = '';
+            clientes.forEach((cliente) => {
+                contenedor.innerHTML += `
+                    <div class="cliente-card bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-900">${cliente.nombre}</h3>
+                                <p class="text-[10px] text-slate-500"><i class="fa-solid fa-location-dot text-sky-500 mr-1"></i>${cliente.direccion}</p>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-600 border border-sky-100">
+                                ${cliente.ruta}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between pt-1 border-t border-slate-50 text-[10px] text-slate-500">
+                            <span><i class="fa-solid fa-phone text-slate-400 mr-1"></i>${cliente.telefono || 'Sin teléfono'}</span>
+                            <span class="font-bold text-slate-700"><i class="fa-solid fa-calendar text-sky-500 mr-1"></i>${cliente.dia}</span>
+                            <button onclick="eliminarCliente(${cliente.id})" class="text-red-500 font-semibold hover:underline">
+                                <i class="fa-solid fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function eliminarCliente(id) {
+            if (confirm('¿Deseas eliminar este cliente?')) {
+                let clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
+                clientes = clientes.filter(c => c.id !== id);
+                localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
+                cargarClientes();
+            }
+        }
+
+        function filtrarClientes() {
+            const query = document.getElementById('buscador').value.toLowerCase();
+            document.querySelectorAll('.cliente-card').forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        cargarClientes();
+    </script>
 </body>
 </html>
