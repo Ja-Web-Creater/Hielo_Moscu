@@ -99,122 +99,133 @@
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script>
-        const map = L.map('map').setView([19.412530, -99.018240], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+    // Inicializar el mapa interno optimizado
+    const map = L.map('map', { zoomControl: true }).setView([19.412530, -99.018240], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
 
-        let markersGroup = L.layerGroup().addTo(map);
-        let routePolyline = null;
-        let marcadoresArray = [];
+    let markersGroup = L.layerGroup().addTo(map);
+    let routePolyline = null;
+    let marcadoresArray = [];
 
-        function cargarMapa(diaFiltro = 'todos') {
-            markersGroup.clearLayers();
-            if (routePolyline) map.removeLayer(routePolyline);
-            marcadoresArray = [];
+    // Función principal optimizada para cargar y filtrar mapa y paradas
+    function cargarMapa(diaFiltro = 'todos') {
+        markersGroup.clearLayers();
+        if (routePolyline) map.removeLayer(routePolyline);
+        marcadoresArray = [];
 
-            // LEER ÚNICAMENTE DE LOCALSTORAGE (SIN DATOS FALSOS)
-            const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-            
-            const filtrados = diaFiltro === 'todos' 
-                ? clientes 
-                : clientes.filter(c => (c.dia || '').toLowerCase() === diaFiltro.toLowerCase());
+        // Leer datos de forma limpia desde localStorage
+        const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
+        
+        const filtrados = diaFiltro === 'todos' 
+            ? clientes 
+            : clientes.filter(c => (c.dia || '').toLowerCase() === diaFiltro.toLowerCase());
 
-            document.getElementById('badge-total').innerText = filtrados.length + ' Entregas';
-            document.getElementById('info-ruta').innerText = diaFiltro === 'todos' ? 'Todas las rutas' : 'Día: ' + diaFiltro;
+        // Actualizar contadores del header
+        document.getElementById('badge-total').innerText = filtrados.length + ' Entregas';
+        document.getElementById('info-ruta').innerText = diaFiltro === 'todos' ? 'Todas las rutas' : 'Día: ' + diaFiltro;
 
-            const listaContenedor = document.getElementById('lista-paradas');
-            listaContenedor.innerHTML = '';
+        const listaContenedor = document.getElementById('lista-paradas');
+        listaContenedor.innerHTML = '';
 
-            if (filtrados.length === 0) {
-                listaContenedor.innerHTML = `
-                    <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-center space-y-2">
-                        <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
-                        <h3 class="text-xs font-bold text-blue-950">No hay entregas registradas</h3>
-                        <p class="text-[11px] text-slate-400">Agrega tu primer cliente desde el botón inferior (+).</p>
-                    </div>`;
-                return;
-            }
+        if (filtrados.length === 0) {
+            listaContenedor.innerHTML = `
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-center space-y-2">
+                    <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
+                    <h3 class="text-xs font-bold text-blue-950">No hay entregas registradas</h3>
+                    <p class="text-[11px] text-slate-400">Agrega tu primer cliente desde el botón inferior (+).</p>
+                </div>`;
+            return;
+        }
 
-            const coordsLinea = [];
+        const coordsLinea = [];
 
-            filtrados.forEach((cliente, index) => {
-                const lat = cliente.lat || 19.412530;
-                const lng = cliente.lng || -99.018240;
-                const punto = [lat, lng];
-                coordsLinea.push(punto);
+        filtrados.forEach((cliente, index) => {
+            const lat = cliente.lat || 19.412530;
+            const lng = cliente.lng || -99.018240;
+            const punto = [lat, lng];
+            coordsLinea.push(punto);
 
-                const marker = L.marker(punto).addTo(markersGroup);
-                marker.bindPopup(`
-                    <div class="text-xs space-y-1">
-                        <strong class="text-sky-700 text-sm">${index + 1}. ${cliente.nombre}</strong><br>
-                        <span class="text-slate-600"><i class="fa-solid fa-location-dot text-sky-500"></i> ${cliente.direccion || 'N/A'}</span><br>
-                        <span class="font-bold text-slate-800"><i class="fa-solid fa-truck text-sky-500"></i> ${cliente.ruta || 'Ruta 1'} (${cliente.dia || 'Lunes'})</span>
-                    </div>
-                `);
+            // Crear marcador Leaflet
+            const marker = L.marker(punto).addTo(markersGroup);
+            marker.bindPopup(`
+                <div class="text-xs space-y-1">
+                    <strong class="text-sky-700 text-sm">${index + 1}. ${cliente.nombre}</strong><br>
+                    <span class="text-slate-600"><i class="fa-solid fa-location-dot text-sky-500"></i> ${cliente.direccion || 'N/A'}</span><br>
+                    <span class="font-bold text-slate-800"><i class="fa-solid fa-truck text-sky-500"></i> ${cliente.ruta || 'Ruta 1'} (${cliente.dia || 'Lunes'})</span>
+                </div>
+            `);
 
-                marcadoresArray.push(marker);
+            marcadoresArray.push(marker);
 
-                listaContenedor.innerHTML += `
-                    <div onclick="enfocarCliente(${index})" class="bg-slate-50 hover:bg-white p-3.5 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between cursor-pointer">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-sky-100 text-sky-700 rounded-xl font-black text-xs flex items-center justify-center shrink-0 shadow-sm">
-                                ${index + 1}
-                            </div>
-                            <div>
-                                <h3 class="text-xs font-bold text-blue-950">${cliente.nombre}</h3>
-                                <p class="text-[11px] text-slate-400 font-medium">${cliente.direccion || 'Ubicación registrada'}</p>
-                                <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded-lg bg-sky-50 text-sky-600 mt-1">
-                                    ${cliente.ruta || 'Ruta 1'} • ${cliente.dia || 'Lunes'}
-                                </span>
-                            </div>
+            // Renderizar tarjeta de parada interactiva
+            listaContenedor.innerHTML += `
+                <div onclick="enfocarCliente(${index})" class="bg-slate-50 hover:bg-white p-3.5 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-sky-100 text-sky-700 rounded-xl font-black text-xs flex items-center justify-center shrink-0 shadow-sm">
+                            ${index + 1}
                         </div>
-                        <div class="text-right">
-                            <span class="text-[11px] font-bold text-sky-600 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-100 flex items-center space-x-1">
-                                <i class="fa-solid fa-crosshairs"></i>
-                                <span>Centrar</span>
+                        <div>
+                            <h3 class="text-xs font-bold text-blue-950">${cliente.nombre}</h3>
+                            <p class="text-[11px] text-slate-400 font-medium">${cliente.direccion || 'Ubicación registrada'}</p>
+                            <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded-lg bg-sky-50 text-sky-600 mt-1">
+                                ${cliente.ruta || 'Ruta 1'} • ${cliente.dia || 'Lunes'}
                             </span>
                         </div>
-                    </div>`;
-            });
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[11px] font-bold text-sky-600 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-100 flex items-center space-x-1">
+                            <i class="fa-solid fa-crosshairs"></i>
+                            <span>Centrar</span>
+                        </span>
+                    </div>
+                </div>`;
+        });
 
-            if (coordsLinea.length > 1) {
-                routePolyline = L.polyline(coordsLinea, {
-                    color: '#0284c7',
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: '6, 6'
-                }).addTo(map);
-            }
-
-            if (filtrados.length > 0) {
-                const group = new L.featureGroup(markersGroup.getLayers());
-                map.fitBounds(group.getBounds().pad(0.3));
-            }
+        // Trazar línea de ruta si hay más de un punto
+        if (coordsLinea.length > 1) {
+            routePolyline = L.polyline(coordsLinea, {
+                color: '#0284c7',
+                weight: 4,
+                opacity: 0.8,
+                dashArray: '6, 6'
+            }).addTo(map);
         }
 
-        function enfocarCliente(index) {
-            const marker = marcadoresArray[index];
-            if (marker) {
-                const latLng = marker.getLatLng();
-                map.setView(latLng, 17, { animate: true });
-                marker.openPopup();
-            }
+        if (filtrados.length > 0) {
+            const group = new L.featureGroup(markersGroup.getLayers());
+            map.fitBounds(group.getBounds().pad(0.3));
         }
+    }
 
-        function filtrarDia(dia) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('bg-sky-600', 'text-white', 'shadow-sm');
-                btn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200');
-            });
-            event.currentTarget.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200');
-            event.currentTarget.classList.add('bg-sky-600', 'text-white', 'shadow-sm');
-
-            cargarMapa(dia);
+    // Zoom fluido optimizado al hacer clic en una parada
+    function enfocarCliente(index) {
+        const marker = marcadoresArray[index];
+        if (marker) {
+            const latLng = marker.getLatLng();
+            map.flyTo(latLng, 17, { animate: true, duration: 1.2 });
+            marker.openPopup();
         }
+    }
 
-        cargarMapa('todos');
-    </script>
+    // Filtro por día con actualización de estados visuales
+    function filtrarDia(dia) {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('bg-sky-600', 'text-white', 'shadow-sm');
+            btn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+        });
+        event.currentTarget.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+        event.currentTarget.classList.add('bg-sky-600', 'text-white', 'shadow-sm');
+
+        cargarMapa(dia);
+    }
+
+    // Inicializar al cargar la página
+    cargarMapa('todos');
+</script>
 </body>
 </html>

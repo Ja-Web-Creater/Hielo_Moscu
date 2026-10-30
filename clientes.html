@@ -76,62 +76,72 @@
     </div>
 
     <script>
-        function cargarClientes() {
-            // LEER ÚNICAMENTE DE LOCALSTORAGE
-            const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-            const contenedor = document.getElementById('lista-clientes');
-            document.getElementById('contador-clientes').innerText = clientes.length + ' clientes';
-            contenedor.innerHTML = '';
+    // Función principal optimizada para renderizar el directorio de clientes
+    function cargarClientes() {
+        const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
+        const contenedor = document.getElementById('lista-clientes');
+        
+        // Actualizar contador en el header si existe el elemento
+        const contador = document.getElementById('contador-clientes');
+        if (contador) contador.innerText = clientes.length + ' clientes';
 
-            if (clientes.length === 0) {
-                contenedor.innerHTML = `
-                    <div class="bg-slate-50 p-10 rounded-2xl border border-slate-100 text-center space-y-2">
-                        <i class="fa-solid fa-users-slash text-3xl text-slate-300"></i>
-                        <h3 class="text-xs font-bold text-blue-950">No hay clientes registrados</h3>
-                        <p class="text-[11px] text-slate-400">Comienza a agregar clientes con el botón inferior.</p>
-                    </div>`;
-                return;
-            }
+        contenedor.innerHTML = '';
 
-            clientes.forEach(cliente => {
-                contenedor.innerHTML += `
-                    <div class="cliente-card bg-slate-50 hover:bg-white p-3.5 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between">
-                        <div class="space-y-1">
-                            <h3 class="text-xs font-bold text-blue-950">${cliente.nombre}</h3>
-                            <p class="text-[11px] font-medium text-slate-400 flex items-center">
-                                <i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> ${cliente.direccion || 'Ubicación guardada'}
-                            </p>
+        if (clientes.length === 0) {
+            contenedor.innerHTML = `
+                <div class="bg-slate-50 p-10 rounded-2xl border border-slate-100 text-center space-y-2">
+                    <i class="fa-solid fa-users-slash text-3xl text-slate-300"></i>
+                    <h3 class="text-xs font-bold text-blue-950">No hay clientes registrados</h3>
+                    <p class="text-[11px] text-slate-400">Comienza a agregar clientes desde el botón inferior (+).</p>
+                </div>`;
+            return;
+        }
+
+        clientes.forEach(cliente => {
+            contenedor.innerHTML += `
+                <div class="cliente-card bg-slate-50 hover:bg-white p-3.5 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between">
+                    <div class="space-y-1">
+                        <h3 class="text-xs font-bold text-blue-950">${cliente.nombre}</h3>
+                        <p class="text-[11px] font-medium text-slate-400 flex items-center">
+                            <i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> ${cliente.direccion || 'Ubicación guardada'}
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-center px-2.5 py-1 rounded-xl bg-sky-100 text-sky-700">
+                            <span class="block text-[10px] font-bold leading-tight">${cliente.ruta || 'Ruta 1'}</span>
+                            <span class="block text-[9px] font-medium opacity-80">${cliente.dia || 'Lunes'}</span>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <div class="text-center px-2.5 py-1 rounded-xl bg-sky-100 text-sky-700">
-                                <span class="block text-[10px] font-bold leading-tight">${cliente.ruta || 'Ruta 1'}</span>
-                                <span class="block text-[9px] font-medium opacity-80">${cliente.dia || 'Lunes'}</span>
-                            </div>
-                            <button onclick="eliminarCliente(${cliente.id})" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 flex items-center justify-center hover:bg-rose-50 transition-colors">
-                                <i class="fa-solid fa-trash text-xs"></i>
-                            </button>
-                        </div>
-                    </div>`;
-            });
-        }
+                        <button onclick="eliminarCliente(${cliente.id})" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 flex items-center justify-center hover:bg-rose-50 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </div>`;
+        });
+    }
 
-        function eliminarCliente(id) {
-            if (confirm('¿Deseas eliminar este cliente?')) {
-                let clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-                clientes = clientes.filter(c => c.id !== id);
-                localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
-                cargarClientes();
-            }
+    // Función optimizada para eliminar un cliente de localStorage
+    function eliminarCliente(id) {
+        if (confirm('¿Deseas eliminar este cliente del sistema?')) {
+            let clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
+            clientes = clientes.filter(c => c.id !== id);
+            localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
+            cargarClientes();
         }
+    }
 
-        function filtrarClientes() {
-            const text = document.getElementById('buscador').value.toLowerCase();
-            document.querySelectorAll('.cliente-card').forEach(card => {
-                card.style.display = card.innerText.toLowerCase().includes(text) ? 'flex' : 'none';
-            });
-        }
+    // Buscador en tiempo real de alta velocidad
+    function filtrarClientes() {
+        const text = document.getElementById('buscador').value.toLowerCase().trim();
+        const tarjetas = document.querySelectorAll('.cliente-card');
+        
+        tarjetas.forEach(card => {
+            const contenido = card.innerText.toLowerCase();
+            card.style.display = contenido.includes(text) ? 'flex' : 'none';
+        });
+    }
 
-        cargarClientes();
-    </script>
+    // Inicializar al cargar la vista
+    cargarClientes();
+</script>
 </body>
 </html>
