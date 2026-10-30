@@ -44,8 +44,8 @@
                     <input type="tel" id="telefono" placeholder="Ej. 5512345678" class="input-field">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-map-location-dot text-sky-500 mr-1"></i> Estado / Ciudad *</label>
-                    <input type="text" id="estado" required value="Estado de México" placeholder="Ej. CDMX, Estado de México..." class="input-field">
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-map-location-dot text-sky-500 mr-1"></i> Estado / Municipio *</label>
+                    <input type="text" id="estado" required value="Nezahualcóyotl, Estado de México" placeholder="Ej. Nezahualcóyotl..." class="input-field">
                 </div>
             </div>
 
@@ -53,12 +53,12 @@
             <div>
                 <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> Dirección Exacta de Entrega *</label>
                 <div class="flex space-x-2">
-                    <input type="text" id="direccion" required placeholder="Ej. Av Cuauhtémoc 70, Pavon, Nezahualcóyotl" class="input-field">
+                    <input type="text" id="direccion" required placeholder="Ej. Av Cuauhtémoc 70, Pavon" class="input-field">
                     <button type="button" onclick="buscarDireccionNacional()" class="px-3.5 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 transition-colors shrink-0 shadow-sm">
                         <i class="fa-solid fa-magnifying-glass"></i> Buscar
                     </button>
                 </div>
-                <span class="text-[10px] text-slate-400 mt-1 block">Escribe la dirección y da clic en "Buscar" para enfocar el mapa automáticamente.</span>
+                <span class="text-[10px] text-slate-400 mt-1 block">Escribe la calle y número. Si no aparece, simplemente toca el mapa donde está el local.</span>
             </div>
 
             <!-- Sensor GPS Satelital y Controles -->
@@ -73,7 +73,7 @@
                 <!-- Mapa Universal con Pin Arrastrable -->
                 <div id="previewMap" class="w-full h-60 rounded-xl border border-slate-200"></div>
                 <p class="text-[10px] text-slate-500 text-center font-medium">
-                    <i class="fa-solid fa-hand-pointer text-sky-500 mr-1"></i> Arrastra el marcador azul o toca el mapa para afinar el punto exacto.
+                    <i class="fa-solid fa-hand-pointer text-sky-500 mr-1"></i> Toca el mapa o arrastra el pin azul a la puerta exacta del cliente.
                 </p>
             </div>
 
@@ -135,7 +135,6 @@
     <!-- Leaflet JS Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
-        // Coordenadas iniciales en Nezahualcóyotl (Av. Cuauhtémoc)
         let latSel = 19.412530, lngSel = -99.018240;
 
         const previewMap = L.map('previewMap').setView([latSel, lngSel], 15);
@@ -153,7 +152,6 @@
             document.getElementById('longitud').value = lng;
         }
 
-        // Mover pin al arrastrar o tocar el mapa
         marker.on('dragend', function(e) {
             const pos = e.target.getLatLng();
             guardarCoordenadas(pos.lat, pos.lng);
@@ -164,7 +162,6 @@
             guardarCoordenadas(e.latlng.lat, e.latlng.lng);
         });
 
-        // GPS Satelital Nativo
         function obtenerGpsNativo() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
@@ -184,7 +181,7 @@
             }
         }
 
-        // Buscador Nacional con Zoom Dinámico (FlyTo)
+        // Buscador Inteligente con respaldo automático para México
         async function buscarDireccionNacional() {
             const dir = document.getElementById('direccion').value;
             const edo = document.getElementById('estado').value;
@@ -201,19 +198,28 @@
                     const lat = parseFloat(data[0].lat);
                     const lng = parseFloat(data[0].lon);
 
-                    // EFECTO DE ZOOM SUAVE AL PUNTO ENCONTRADO
-                    previewMap.flyTo([lat, lng], 17, {
-                        animate: true,
-                        duration: 1.5
-                    });
-
+                    previewMap.flyTo([lat, lng], 17, { animate: true, duration: 1.5 });
                     marker.setLatLng([lat, lng]);
                     guardarCoordenadas(lat, lng);
                 } else {
-                    alert('No se encontró la dirección exacta por texto. Toca directamente sobre el mapa para fijar el punto.');
+                    // Intento de respaldo: Buscar solo por municipio si la calle exacta no arroja resultados
+                    const queryRespaldo = `${edo}, México`;
+                    const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryRespaldo)}`);
+                    const data2 = await res2.json();
+
+                    if (data2 && data2.length > 0) {
+                        const lat = parseFloat(data2[0].lat);
+                        const lng = parseFloat(data2[0].lon);
+                        previewMap.flyTo([lat, lng], 14, { animate: true });
+                        marker.setLatLng([lat, lng]);
+                        guardarCoordenadas(lat, lng);
+                    }
+                    
+                    // Aviso amigable sin bloquear
+                    alert('📍 Ubicación aproximada centrada. Toca directamente en el mapa la ubicación exacta del local para afinar el pin.');
                 }
             } catch (err) {
-                alert('Error al conectar con el buscador. Toca el mapa para fijar la ubicación.');
+                alert('📍 Toca directamente en el mapa para colocar el pin en la ubicación del cliente.');
             }
         }
 
