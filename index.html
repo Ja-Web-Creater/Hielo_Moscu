@@ -4,32 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hielo Moscú - Sistema de Rutas y Clientes</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            500: '#0284c7',
-                            600: '#0369a1',
-                            700: '#0c4a6e',
-                            dark: '#0f172a'
+        window.tailwind = {
+            config: {
+                theme: {
+                    extend: {
+                        colors: {
+                            brand: {
+                                50: '#f0f7ff',
+                                100: '#e0effe',
+                                500: '#0284c7',
+                                600: '#0369a1',
+                                700: '#0c4a6e',
+                                dark: '#0f172a'
+                            }
                         }
                     }
                 }
             }
-        }
+        };
     </script>
-    <!-- Leaflet CSS for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- FontAwesome Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* Custom scrollbar & layout tweaks */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -94,16 +94,16 @@
                     <h2 class="text-2xl font-bold text-slate-900">Mapa de rutas</h2>
                     <p class="text-slate-500 text-sm">Planeación y visualización de recorridos en tiempo real</p>
                 </div>
-                <!-- Días Selector -->
-                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white whitespace-nowrap shadow-sm">Todos</button>
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Lun</button>
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mar</button>
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mié</button>
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Jue</button>
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Vie</button>
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Sáb</button>
-                    <button class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Dom</button>
+                <!-- Días Selector con Funcionalidad JS -->
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0" id="dayFilterContainer">
+                    <button onclick="filterByDay('Todos', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white whitespace-nowrap shadow-sm">Todos</button>
+                    <button onclick="filterByDay('Lun', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Lun</button>
+                    <button onclick="filterByDay('Mar', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mar</button>
+                    <button onclick="filterByDay('Mié', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Mié</button>
+                    <button onclick="filterByDay('Jue', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Jue</button>
+                    <button onclick="filterByDay('Vie', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Vie</button>
+                    <button onclick="filterByDay('Sáb', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Sáb</button>
+                    <button onclick="filterByDay('Dom', this)" class="day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Dom</button>
                 </div>
             </div>
 
@@ -114,7 +114,7 @@
                         <i class="fa-solid fa-route"></i>
                     </div>
                     <div>
-                        <span class="text-xs text-slate-400 font-medium block">Rutas</span>
+                        <span class="text-xs text-slate-400 font-medium block">Rutas Totales</span>
                         <span class="text-lg font-bold text-slate-800">18</span>
                     </div>
                 </div>
@@ -124,7 +124,7 @@
                     </div>
                     <div>
                         <span class="text-xs text-slate-400 font-medium block">Clientes</span>
-                        <span class="text-lg font-bold text-slate-800">63</span>
+                        <span class="text-lg font-bold text-slate-800" id="totalClientsCount">63</span>
                     </div>
                 </div>
                 <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
@@ -132,8 +132,8 @@
                         <i class="fa-solid fa-eye"></i>
                     </div>
                     <div>
-                        <span class="text-xs text-slate-400 font-medium block">Visibles</span>
-                        <span class="text-lg font-bold text-slate-800">2 Rutas</span>
+                        <span class="text-xs text-slate-400 font-medium block">Filtro Activo</span>
+                        <span class="text-lg font-bold text-slate-800" id="visibleCount">Todas</span>
                     </div>
                 </div>
             </div>
@@ -166,7 +166,6 @@
 
             <!-- Listado Cards -->
             <div class="space-y-3">
-                <!-- Cliente Item 1 -->
                 <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
                     <div class="space-y-1">
                         <h3 class="font-bold text-slate-900 text-base">Abarrotes Lupita</h3>
@@ -175,15 +174,14 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-600 border border-sky-100">Ruta 1 (Lunes)</span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Ruta 2 (Lunes)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-600 border border-sky-100">Ruta 1 (Lun)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-100">Ruta 2 (Lun)</span>
                         <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
                             <i class="fa-solid fa-eye text-sm"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Cliente Item 2 -->
                 <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
                     <div class="space-y-1">
                         <h3 class="font-bold text-slate-900 text-base">Cremería San Juan</h3>
@@ -192,15 +190,14 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">Ruta 3 (Martes)</span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-600 border border-purple-100">Ruta 4 (Martes)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">Ruta 3 (Mar)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-50 text-purple-600 border border-purple-100">Ruta 4 (Mar)</span>
                         <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
                             <i class="fa-solid fa-eye text-sm"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Cliente Item 3 -->
                 <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
                     <div class="space-y-1">
                         <h3 class="font-bold text-slate-900 text-base">Miscelánea El Sol</h3>
@@ -209,25 +206,8 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">Ruta 5 (Miércoles)</span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-50 text-cyan-600 border border-cyan-100">Ruta 6 (Miércoles)</span>
-                        <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
-                            <i class="fa-solid fa-eye text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Cliente Item 4 -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm hover:border-sky-300 transition-all flex items-center justify-between gap-4">
-                    <div class="space-y-1">
-                        <h3 class="font-bold text-slate-900 text-base">Frutas y Verduras La Paz</h3>
-                        <p class="text-xs text-slate-500 flex items-center gap-1.5">
-                            <i class="fa-solid fa-location-dot text-sky-500"></i> Nezahualcóyotl
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">Ruta 11 (Viernes)</span>
-                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-600 border border-sky-100">Ruta 12 (Viernes)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-100">Ruta 5 (Mié)</span>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-50 text-cyan-600 border border-cyan-100">Ruta 6 (Mié)</span>
                         <button class="w-9 h-9 rounded-full bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 flex items-center justify-center transition-all ml-2">
                             <i class="fa-solid fa-eye text-sm"></i>
                         </button>
@@ -253,9 +233,7 @@
                 </div>
             </div>
 
-            <!-- Grid de Rutas -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Ruta 1 Card -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -278,7 +256,6 @@
                     </div>
                 </div>
 
-                <!-- Ruta 2 Card -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -300,52 +277,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- Ruta 3 Card -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full bg-sky-500"></div>
-                            <h3 class="font-bold text-slate-900 text-lg">RUTA 3</h3>
-                        </div>
-                        <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">Lunes</span>
-                    </div>
-                    <div class="flex items-center gap-4 text-xs text-slate-500">
-                        <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> 21 clientes</span>
-                        <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> Zona: Ecatepec</span>
-                    </div>
-                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-                        <button onclick="switchTab('mapa')" class="flex-1 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-map"></i> Ver mapa
-                        </button>
-                        <button class="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-pen"></i> Editar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Ruta 4 Card -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-4 h-4 rounded-full bg-slate-500"></div>
-                            <h3 class="font-bold text-slate-900 text-lg">RUTA 4</h3>
-                        </div>
-                        <span class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-lg text-slate-600">Viernes</span>
-                    </div>
-                    <div class="flex items-center gap-4 text-xs text-slate-500">
-                        <span><i class="fa-solid fa-users text-slate-400 mr-1"></i> 10 clientes</span>
-                        <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i> Zona: CDMX Oriente</span>
-                    </div>
-                    <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-                        <button onclick="switchTab('mapa')" class="flex-1 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-map"></i> Ver mapa
-                        </button>
-                        <button class="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-semibold text-xs transition-all flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-pen"></i> Editar
-                        </button>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -357,7 +288,6 @@
             </div>
 
             <form class="space-y-6">
-                <!-- Datos del cliente -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-user-gear"></i> Datos del cliente
@@ -374,7 +304,6 @@
                     </div>
                 </div>
 
-                <!-- Ubicación GPS -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-location-crosshairs"></i> Ubicación GPS
@@ -392,7 +321,6 @@
                     </div>
                 </div>
 
-                <!-- Sugerencia de Ruta (Haversine) -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Sugerencia de ruta inteligente
@@ -410,7 +338,6 @@
                     </div>
                 </div>
 
-                <!-- Enfriador -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-sm font-bold text-sky-600 uppercase tracking-wider flex items-center gap-2">
@@ -433,7 +360,6 @@
                     </div>
                 </div>
 
-                <!-- Botones -->
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="switchTab('clientes')" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-all">Cancelar</button>
                     <button type="button" onclick="switchTab('clientes')" class="flex-1 py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-sky-600/30 transition-all">Guardar cliente</button>
@@ -464,46 +390,79 @@
     </nav>
 
     <!-- Leaflet JS for Maps -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
         let map = null;
+        let markersGroup = null;
 
-        // Init Leaflet Map safely
+        // Datos de clientes con día asignado
+        const clientsData = [
+            { lat: 19.4036, lng: -98.9892, title: "Abarrotes Lupita", route: "Ruta 1", day: "Lun" },
+            { lat: 19.4150, lng: -98.9500, title: "Cremería San Juan", route: "Ruta 3", day: "Mar" },
+            { lat: 19.5000, lng: -99.0300, title: "Miscelánea El Sol", route: "Ruta 5", day: "Mié" },
+            { lat: 19.3800, lng: -98.9900, title: "Carnes Y Fest", route: "Ruta 7", day: "Jue" },
+            { lat: 19.4200, lng: -98.9700, title: "Frutas La Paz", route: "Ruta 11", day: "Vie" },
+            { lat: 19.4100, lng: -98.9600, title: "Tortillería La Esperanza", route: "Ruta 13", day: "Sáb" },
+            { lat: 19.4900, lng: -99.0200, title: "Farmacia Bienestar", route: "Ruta 15", day: "Dom" }
+        ];
+
+        // Inicializar Mapa
         function initMap() {
             if (map) return;
-            map = L.map('map').setView([19.4000, -99.0000], 11);
+            map = L.map('map').setView([19.4100, -98.9800], 11);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
             }).addTo(map);
 
-            // Add demo markers
-            const points = [
-                { lat: 19.4036, lng: -98.9892, title: "Abarrotes Lupita", route: "Ruta 1" },
-                { lat: 19.4150, lng: -98.9500, title: "Cremería San Juan", route: "Ruta 2" },
-                { lat: 19.5000, lng: -99.0300, title: "Miscelánea El Sol", route: "Ruta 3" }
-            ];
-
-            points.forEach(p => {
-                L.marker([p.lat, p.lng]).addTo(map)
-                    .bindPopup(`<b>${p.title}</b><br>${p.route}`);
-            });
+            markersGroup = L.layerGroup().addTo(map);
+            renderMarkers('Todos');
         }
 
-        // Tab Switching Logic
+        // Renderizar Marcadores en el Mapa según el Día
+        function renderMarkers(selectedDay) {
+            if (!markersGroup) return;
+            markersGroup.clearLayers();
+
+            const filtered = selectedDay === 'Todos' 
+                ? clientsData 
+                : clientsData.filter(c => c.day === selectedDay);
+
+            filtered.forEach(p => {
+                L.marker([p.lat, p.lng]).addTo(markersGroup)
+                    .bindPopup(`<b>${p.title}</b><br>${p.route} (${p.day})`);
+            });
+
+            // Actualizar etiqueta del contador
+            const visibleEl = document.getElementById('visibleCount');
+            if (visibleEl) visibleEl.innerText = selectedDay === 'Todos' ? 'Todas' : selectedDay;
+        }
+
+        // Función para filtrar por botón de Día
+        function filterByDay(day, btnElement) {
+            // Estilos para el botón activo vs inactivos
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.className = "day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 whitespace-nowrap";
+            });
+
+            if (btnElement) {
+                btnElement.className = "day-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-600 text-white whitespace-nowrap shadow-sm";
+            }
+
+            // Filtrar mapa
+            renderMarkers(day);
+        }
+
+        // Cambio de Pestañas
         function switchTab(tabId) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             
-            // Show target tab
             const target = document.getElementById('view-' + tabId);
             if (target) target.classList.remove('hidden');
 
-            // Update mobile header title
             const titles = { 'mapa': 'Mapa', 'clientes': 'Clientes', 'rutas': 'Rutas', 'agregar': 'Agregar cliente' };
             const titleEl = document.getElementById('mobileTabTitle');
             if (titleEl) titleEl.innerText = titles[tabId] || 'Panel';
 
-            // Active State for Desktop Sidebar
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('bg-sky-600', 'text-white');
                 btn.classList.add('text-slate-400');
@@ -514,19 +473,15 @@
                 activeSide.classList.remove('text-slate-400');
             }
 
-            // Active State for Mobile Nav
             ['mapa', 'clientes', 'rutas', 'agregar'].forEach(id => {
                 const mobBtn = document.getElementById('mob-' + id);
                 if (mobBtn) {
-                    if (id === tabId) {
-                        mobBtn.className = "flex flex-col items-center gap-1 p-2 text-sky-600 font-bold";
-                    } else {
-                        mobBtn.className = "flex flex-col items-center gap-1 p-2 text-slate-400";
-                    }
+                    mobBtn.className = id === tabId 
+                        ? "flex flex-col items-center gap-1 p-2 text-sky-600 font-bold" 
+                        : "flex flex-col items-center gap-1 p-2 text-slate-400";
                 }
             });
 
-            // If switching to Map tab, recalculate map container size
             if (tabId === 'mapa') {
                 setTimeout(() => {
                     initMap();
@@ -535,7 +490,6 @@
             }
         }
 
-        // Load Map on Start
         window.addEventListener('DOMContentLoaded', () => {
             initMap();
             switchTab('mapa');
