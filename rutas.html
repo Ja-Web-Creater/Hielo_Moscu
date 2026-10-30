@@ -21,7 +21,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-black text-blue-950 tracking-tight leading-none">HIELO MOSCÚ</h1>
-                    <p class="text-xs font-semibold text-sky-600 mt-0.5">Rutas</p>
+                    <p class="text-xs font-semibold text-sky-600 mt-0.5">Rutas (MySQL)</p>
                 </div>
             </div>
         </header>
@@ -74,7 +74,10 @@
 
             <!-- Lista Dinámica de Tarjetas de Rutas -->
             <div id="lista-rutas" class="space-y-3">
-                <!-- Se renderiza desde JavaScript con datos de localStorage -->
+                <div class="text-center py-10 text-slate-400 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-sky-500"></i>
+                    <p>Calculando rutas desde MySQL...</p>
+                </div>
             </div>
 
         </main>
@@ -100,44 +103,56 @@
                     </div>
                     <span class="text-[10px] font-medium mt-1">Agregar</span>
                 </a>
-                <a href="#" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
-                    <i class="fa-solid fa-magnifying-glass text-lg"></i>
-                    <span class="text-[10px] font-medium mt-1">Buscar</span>
-                </a>
             </div>
         </nav>
     </div>
 
-    <!-- Script de Lógica y Optimización -->
+    <!-- Script de Lógica conectado a MySQL -->
     <script>
+        let rutasGlobal = [];
+
         function cargarRutas() {
-            const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-            
-            const rutasMap = {};
-            const zonasSet = new Set();
+            fetch('obtener_clientes.php')
+                .then(response => response.json())
+                .then(clientes => {
+                    const rutasMap = {};
+                    const zonasSet = new Set();
 
-            clientes.forEach(cliente => {
-                const rutaNombre = cliente.ruta || 'Ruta 1';
-                const zona = cliente.direccion || cliente.estado || 'Nezahualcóyotl';
-                zonasSet.add(zona);
+                    clientes.forEach(cliente => {
+                        const rutaNombre = cliente.route || 'Ruta 1';
+                        const zona = cliente.address || 'Nezahualcóyotl';
+                        zonasSet.add(zona);
 
-                if (!rutasMap[rutaNombre]) {
-                    rutasMap[rutaNombre] = {
-                        nombre: rutaNombre,
-                        clientesCount: 0,
-                        dia: cliente.dia || 'Lunes',
-                        zona: zona,
-                        color: obtenerColorRuta(rutaNombre)
-                    };
-                }
-                rutasMap[rutaNombre].clientesCount++;
-            });
+                        if (!rutasMap[rutaNombre]) {
+                            rutasMap[rutaNombre] = {
+                                nombre: rutaNombre,
+                                clientesCount: 0,
+                                dia: cliente.delivery_day || 'Lunes',
+                                zona: zona,
+                                color: obtenerColorRuta(rutaNombre)
+                            };
+                        }
+                        rutasMap[rutaNombre].clientesCount++;
+                    });
 
-            const rutasArray = Object.values(rutasMap);
+                    rutasGlobal = Object.values(rutasMap);
 
-            document.getElementById('total-rutas').innerText = rutasArray.length;
-            document.getElementById('total-zonas').innerText = zonasSet.size;
+                    document.getElementById('total-rutas').innerText = rutasGlobal.length;
+                    document.getElementById('total-zonas').innerText = zonasSet.size;
 
+                    renderizarRutas(rutasGlobal);
+                })
+                .catch(error => {
+                    console.error('Error al obtener rutas:', error);
+                    document.getElementById('lista-rutas').innerHTML = `
+                        <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 text-center text-rose-600 text-xs">
+                            <i class="fa-solid fa-triangle-exclamation text-lg mb-1"></i>
+                            <p>No se pudo conectar con MySQL para calcular las rutas.</p>
+                        </div>`;
+                });
+        }
+
+        function renderizarRutas(rutasArray) {
             const contenedor = document.getElementById('lista-rutas');
             contenedor.innerHTML = '';
 
@@ -145,8 +160,8 @@
                 contenedor.innerHTML = `
                     <div class="bg-slate-50 p-10 rounded-2xl border border-slate-100 text-center space-y-2">
                         <i class="fa-solid fa-route text-3xl text-slate-300"></i>
-                        <h3 class="text-xs font-bold text-blue-950">No hay rutas activas</h3>
-                        <p class="text-[11px] text-slate-400">Las rutas se generan automáticamente al registrar clientes.</p>
+                        <h3 class="text-xs font-bold text-blue-950">No hay rutas activas en MySQL</h3>
+                        <p class="text-[11px] text-slate-400">Las rutas se calculan al registrar clientes.</p>
                     </div>`;
                 return;
             }
@@ -200,11 +215,15 @@
 
         function filtrarRutas() {
             const text = document.getElementById('buscador-rutas').value.toLowerCase().trim();
-            document.querySelectorAll('.ruta-card').forEach(card => {
-                card.style.display = card.innerText.toLowerCase().includes(text) ? 'block' : 'none';
-            });
+            const filtradas = rutasGlobal.filter(r => 
+                r.nombre.toLowerCase().includes(text) ||
+                r.dia.toLowerCase().includes(text) ||
+                r.zona.toLowerCase().includes(text)
+            );
+            renderizarRutas(filtradas);
         }
 
+        // Cargar al iniciar
         cargarRutas();
     </script>
 </body>

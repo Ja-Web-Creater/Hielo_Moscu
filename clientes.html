@@ -7,8 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/clientes.css">
+    <link rel="stylesheet" href="css/clientes.css">
 </head>
 <body class="bg-slate-50 text-slate-800 pb-24 md:pb-8">
 
@@ -22,9 +21,12 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-black text-blue-950 tracking-tight leading-none">HIELO MOSCÚ</h1>
-                    <p class="text-xs font-semibold text-sky-600 mt-0.5">Directorio de Clientes</p>
+                    <p class="text-xs font-semibold text-sky-600 mt-0.5">Directorio de clientes</p>
                 </div>
             </div>
+            <span id="contador-clientes" class="text-xs font-bold bg-sky-50 text-sky-600 px-3 py-1.5 rounded-xl border border-sky-100">
+                0 clientes
+            </span>
         </header>
 
         <!-- Contenido -->
@@ -35,17 +37,15 @@
                 <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-sky-500">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </span>
-                <input type="text" id="buscador" onkeyup="filtrarClientes()" placeholder="Buscar cliente o negocio" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-700 focus:outline-none focus:border-sky-500 transition-all">
+                <input type="text" id="buscador" onkeyup="filtrarClientes()" placeholder="Buscar por nombre, dirección o ruta" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-700 focus:outline-none focus:border-sky-500 transition-all">
             </div>
 
-            <div class="flex items-center justify-between pt-1">
-                <h2 class="text-sm font-bold text-blue-950">Lista de clientes</h2>
-                <span id="contador-clientes" class="text-xs font-bold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-lg">0 clientes</span>
-            </div>
-
-            <!-- Contenedor Limpio -->
+            <!-- Lista de Clientes (Cargada desde MySQL vía PHP) -->
             <div id="lista-clientes" class="space-y-3">
-                <!-- Se llena desde localStorage -->
+                <div class="text-center py-10 text-slate-400 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-sky-500"></i>
+                    <p>Cargando clientes desde la base de datos...</p>
+                </div>
             </div>
 
         </main>
@@ -53,7 +53,7 @@
         <!-- Navegación -->
         <nav class="sticky md:relative bottom-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-3 px-6 mt-auto">
             <div class="max-w-md mx-auto flex justify-between items-center">
-                <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                     <i class="fa-solid fa-map text-lg"></i>
                     <span class="text-[10px] font-medium mt-1">Mapa</span>
                 </a>
@@ -61,11 +61,11 @@
                     <i class="fa-solid fa-users text-lg"></i>
                     <span class="text-[10px] mt-1">Clientes</span>
                 </a>
-                <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                     <i class="fa-solid fa-route text-lg"></i>
                     <span class="text-[10px] font-medium mt-1">Rutas</span>
                 </a>
-                <a href="agregar.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <a href="agregar.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                     <div class="w-8 h-8 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-md shadow-sky-500/30">
                         <i class="fa-solid fa-plus text-sm"></i>
                     </div>
@@ -75,73 +75,102 @@
         </nav>
     </div>
 
+    <!-- Lógica de Conexión con MySQL -->
     <script>
-    // Función principal optimizada para renderizar el directorio de clientes
-    function cargarClientes() {
-        const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-        const contenedor = document.getElementById('lista-clientes');
-        
-        // Actualizar contador en el header si existe el elemento
-        const contador = document.getElementById('contador-clientes');
-        if (contador) contador.innerText = clientes.length + ' clientes';
+        let clientesGlobal = [];
 
-        contenedor.innerHTML = '';
-
-        if (clientes.length === 0) {
-            contenedor.innerHTML = `
-                <div class="bg-slate-50 p-10 rounded-2xl border border-slate-100 text-center space-y-2">
-                    <i class="fa-solid fa-users-slash text-3xl text-slate-300"></i>
-                    <h3 class="text-xs font-bold text-blue-950">No hay clientes registrados</h3>
-                    <p class="text-[11px] text-slate-400">Comienza a agregar clientes desde el botón inferior (+).</p>
-                </div>`;
-            return;
+        function cargarClientes() {
+            fetch('obtener_clientes.php')
+                .then(response => response.json())
+                .then(clientes => {
+                    clientesGlobal = clientes;
+                    renderizarClientes(clientes);
+                })
+                .catch(error => {
+                    console.error('Error al obtener clientes:', error);
+                    document.getElementById('lista-clientes').innerHTML = `
+                        <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 text-center text-rose-600 text-xs">
+                            <i class="fa-solid fa-triangle-exclamation text-lg mb-1"></i>
+                            <p>No se pudo conectar con la base de datos MySQL.</p>
+                        </div>`;
+                });
         }
 
-        clientes.forEach(cliente => {
-            contenedor.innerHTML += `
-                <div class="cliente-card bg-slate-50 hover:bg-white p-3.5 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between">
-                    <div class="space-y-1">
-                        <h3 class="text-xs font-bold text-blue-950">${cliente.nombre}</h3>
-                        <p class="text-[11px] font-medium text-slate-400 flex items-center">
-                            <i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> ${cliente.direccion || 'Ubicación guardada'}
-                        </p>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="text-center px-2.5 py-1 rounded-xl bg-sky-100 text-sky-700">
-                            <span class="block text-[10px] font-bold leading-tight">${cliente.ruta || 'Ruta 1'}</span>
-                            <span class="block text-[9px] font-medium opacity-80">${cliente.dia || 'Lunes'}</span>
+        function renderizarClientes(clientes) {
+            const contenedor = document.getElementById('lista-clientes');
+            const contador = document.getElementById('contador-clientes');
+            
+            if (contador) contador.innerText = clientes.length + ' clientes';
+            contenedor.innerHTML = '';
+
+            if (clientes.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="bg-slate-50 p-10 rounded-2xl border border-slate-100 text-center space-y-2">
+                        <i class="fa-solid fa-users-slash text-3xl text-slate-300"></i>
+                        <h3 class="text-xs font-bold text-blue-950">No hay clientes registrados en MySQL</h3>
+                        <p class="text-[11px] text-slate-400">Comienza a agregar clientes desde el botón inferior (+).</p>
+                    </div>`;
+                return;
+            }
+
+            clientes.forEach(cliente => {
+                contenedor.innerHTML += `
+                    <div class="cliente-card bg-slate-50 hover:bg-white p-3.5 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between">
+                        <div class="space-y-1">
+                            <h3 class="text-xs font-bold text-blue-950">${cliente.name}</h3>
+                            <p class="text-[11px] font-medium text-slate-400 flex items-center">
+                                <i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> ${cliente.address || 'Ubicación guardada'}
+                            </p>
                         </div>
-                        <button onclick="eliminarCliente(${cliente.id})" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 flex items-center justify-center hover:bg-rose-50 transition-colors cursor-pointer">
-                            <i class="fa-solid fa-trash text-xs"></i>
-                        </button>
-                    </div>
-                </div>`;
-        });
-    }
-
-    // Función optimizada para eliminar un cliente de localStorage
-    function eliminarCliente(id) {
-        if (confirm('¿Deseas eliminar este cliente del sistema?')) {
-            let clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-            clientes = clientes.filter(c => c.id !== id);
-            localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
-            cargarClientes();
+                        <div class="flex items-center space-x-2">
+                            <div class="text-center px-2.5 py-1 rounded-xl bg-sky-100 text-sky-700">
+                                <span class="block text-[10px] font-bold leading-tight">${cliente.route || 'Ruta 1'}</span>
+                                <span class="block text-[9px] font-medium opacity-80">${cliente.delivery_day || 'Lunes'}</span>
+                            </div>
+                            <button onclick="eliminarCliente(${cliente.id})" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-rose-500 flex items-center justify-center hover:bg-rose-50 transition-colors cursor-pointer">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </div>`;
+            });
         }
-    }
 
-    // Buscador en tiempo real de alta velocidad
-    function filtrarClientes() {
-        const text = document.getElementById('buscador').value.toLowerCase().trim();
-        const tarjetas = document.querySelectorAll('.cliente-card');
-        
-        tarjetas.forEach(card => {
-            const contenido = card.innerText.toLowerCase();
-            card.style.display = contenido.includes(text) ? 'flex' : 'none';
-        });
-    }
+        function eliminarCliente(id) {
+            if (confirm('¿Deseas eliminar este cliente de la base de datos MySQL?')) {
+                const formData = new FormData();
+                formData.append('id', id);
 
-    // Inicializar al cargar la vista
-    cargarClientes();
-</script>
+                fetch('eliminar_cliente.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarClientes();
+                    } else {
+                        alert('❌ Error al eliminar: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al conectar con el servidor.');
+                });
+            }
+        }
+
+        function filtrarClientes() {
+            const text = document.getElementById('buscador').value.toLowerCase().trim();
+            const filtrados = clientesGlobal.filter(c => 
+                (c.name && c.name.toLowerCase().includes(text)) ||
+                (c.address && c.address.toLowerCase().includes(text)) ||
+                (c.route && c.route.toLowerCase().includes(text))
+            );
+            renderizarClientes(filtrados);
+        }
+
+        // Cargar al iniciar
+        cargarClientes();
+    </script>
 </body>
 </html>

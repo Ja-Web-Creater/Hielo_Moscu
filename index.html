@@ -3,91 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - Mapa y Operaciones</title>
+    <title>Hielo Moscú - Mapa y Monitor de Entregas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/style.css">
-<link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/index.css">
 </head>
 <body class="bg-slate-50 text-slate-800 pb-24 md:pb-8">
 
-    <div class="max-w-xl md:max-w-4xl mx-auto min-h-screen bg-white shadow-xl md:my-6 md:rounded-3xl overflow-hidden flex flex-col">
+    <div class="max-w-xl md:max-w-5xl mx-auto min-h-screen bg-white shadow-xl md:my-6 md:rounded-3xl overflow-hidden flex flex-col">
         
-        <!-- Header Principal -->
-        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+        <!-- Header -->
+        <header class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white z-20">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-gradient-to-tr from-sky-600 to-blue-400 rounded-2xl flex items-center justify-center text-white shadow-md shadow-sky-500/30">
                     <i class="fa-solid fa-mountain text-xl"></i>
                 </div>
                 <div>
                     <h1 class="text-lg font-black text-blue-950 tracking-tight leading-none">HIELO MOSCÚ</h1>
-                    <p class="text-xs font-semibold text-sky-600 mt-0.5">Monitoreo y Rutas</p>
+                    <p id="info-ruta" class="text-xs font-semibold text-sky-600 mt-0.5">Todas las rutas (MySQL)</p>
                 </div>
             </div>
-            <span id="badge-total" class="px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-600 border border-sky-100 shadow-sm">
+            <span id="badge-total" class="text-xs font-bold bg-sky-50 text-sky-600 px-3 py-1.5 rounded-xl border border-sky-100">
                 0 Entregas
             </span>
         </header>
 
-        <!-- Contenido -->
-        <main class="p-5 space-y-4 flex-1">
+        <!-- Contenido Principal -->
+        <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
             
-            <!-- Filtros por Día -->
-            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <p class="text-xs font-bold text-blue-950 mb-2 px-1 flex items-center">
-                    <i class="fa-solid fa-filter text-sky-500 mr-2"></i> Filtrar entregas por día
-                </p>
-                <div class="flex space-x-1.5 overflow-x-auto no-scrollbar pb-1">
-                    <button onclick="filtrarDia('todos')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white shadow-sm transition-all shrink-0">Todos</button>
-                    <button onclick="filtrarDia('Lunes')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all shrink-0">Lunes</button>
-                    <button onclick="filtrarDia('Martes')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all shrink-0">Martes</button>
-                    <button onclick="filtrarDia('Miercoles')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all shrink-0">Miércoles</button>
-                    <button onclick="filtrarDia('Jueves')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all shrink-0">Jueves</button>
-                    <button onclick="filtrarDia('Viernes')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all shrink-0">Viernes</button>
-                    <button onclick="filtrarDia('Sabado')" class="filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all shrink-0">Sábado</button>
+            <!-- Sección del Mapa -->
+            <div class="w-full md:w-3/5 h-72 md:h-auto relative z-10">
+                <div id="map" class="w-full h-full min-h-[280px]"></div>
+            </div>
+
+            <!-- Panel Lateral / Inferior de Paradas -->
+            <div class="w-full md:w-2/5 p-4 space-y-3 overflow-y-auto bg-white flex flex-col justify-between border-t md:border-t-0 md:border-l border-slate-100">
+                
+                <!-- Filtros Rápidos por Día -->
+                <div class="space-y-2">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Filtrar por día</span>
+                    <div class="flex space-x-1.5 overflow-x-auto pb-1 no-scrollbar">
+                        <button onclick="filtrarDia('todos')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-600 text-white shadow-sm shrink-0">Todos</button>
+                        <button onclick="filtrarDia('lunes')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">Lunes</button>
+                        <button onclick="filtrarDia('martes')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">Martes</button>
+                        <button onclick="filtrarDia('miercoles')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">Miércoles</button>
+                        <button onclick="filtrarDia('jueves')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">Jueves</button>
+                        <button onclick="filtrarDia('viernes')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">Viernes</button>
+                        <button onclick="filtrarDia('sabado')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">Sábado</button>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Mapa Interno -->
-            <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 space-y-2">
-                <div class="flex items-center justify-between px-1">
-                    <h2 class="text-xs font-bold text-blue-950 flex items-center">
-                        <i class="fa-solid fa-map-location-dot text-sky-500 mr-2"></i> Mapa de Operación en Vivo
-                    </h2>
-                    <span id="info-ruta" class="text-[11px] font-bold text-sky-600 bg-sky-50 px-2.5 py-0.5 rounded-lg">Sin datos</span>
+                <!-- Lista de Paradas -->
+                <div id="lista-paradas" class="space-y-2 flex-1 overflow-y-auto max-h-[380px] pr-1">
+                    <div class="text-center py-10 text-slate-400 text-xs">
+                        <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-sky-500"></i>
+                        <p>Cargando puntos de entrega desde MySQL...</p>
+                    </div>
                 </div>
-                <div id="map" class="w-full h-80 rounded-2xl overflow-hidden border border-slate-200 shadow-inner z-10"></div>
-            </div>
 
-            <div class="flex items-center justify-between pt-1">
-                <h2 class="text-sm font-bold text-blue-950">Puntos de entrega asignados</h2>
-            </div>
-
-            <!-- Lista Dinámica Limpia -->
-            <div id="lista-paradas" class="space-y-3">
-                <!-- Se llena dinámicamente desde localStorage -->
             </div>
 
         </main>
 
         <!-- Navegación -->
-        <nav class="sticky md:relative bottom-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-3 px-6 mt-auto z-50">
+        <nav class="sticky md:relative bottom-0 bg-white/95 backdrop-blur-md border-t border-slate-100 py-3 px-6 mt-auto z-20">
             <div class="max-w-md mx-auto flex justify-between items-center">
                 <a href="index.html" class="flex flex-col items-center text-sky-600 font-bold">
                     <i class="fa-solid fa-map text-lg"></i>
                     <span class="text-[10px] mt-1">Mapa</span>
                 </a>
-                <a href="clientes.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <a href="clientes.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                     <i class="fa-solid fa-users text-lg"></i>
                     <span class="text-[10px] font-medium mt-1">Clientes</span>
                 </a>
-                <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                     <i class="fa-solid fa-route text-lg"></i>
                     <span class="text-[10px] font-medium mt-1">Rutas</span>
                 </a>
-                <a href="agregar.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <a href="agregar.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600">
                     <div class="w-8 h-8 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-md shadow-sky-500/30">
                         <i class="fa-solid fa-plus text-sm"></i>
                     </div>
@@ -95,137 +90,146 @@
                 </a>
             </div>
         </nav>
+
     </div>
 
-    <!-- Leaflet JS -->
+    <!-- Leaflet JS y Lógica Conectada con MySQL -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>
-    // Inicializar el mapa interno optimizado
-    const map = L.map('map', { zoomControl: true }).setView([19.412530, -99.018240], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    <script>
+        const map = L.map('map', { zoomControl: true }).setView([19.412530, -99.018240], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
 
-    let markersGroup = L.layerGroup().addTo(map);
-    let routePolyline = null;
-    let marcadoresArray = [];
+        let markersGroup = L.layerGroup().addTo(map);
+        let routePolyline = null;
+        let marcadoresArray = [];
+        let clientesGlobales = [];
+        let diaActual = 'todos';
 
-    // Función principal optimizada para cargar y filtrar mapa y paradas
-    function cargarMapa(diaFiltro = 'todos') {
-        markersGroup.clearLayers();
-        if (routePolyline) map.removeLayer(routePolyline);
-        marcadoresArray = [];
-
-        // Leer datos de forma limpia desde localStorage
-        const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
-        
-        const filtrados = diaFiltro === 'todos' 
-            ? clientes 
-            : clientes.filter(c => (c.dia || '').toLowerCase() === diaFiltro.toLowerCase());
-
-        // Actualizar contadores del header
-        document.getElementById('badge-total').innerText = filtrados.length + ' Entregas';
-        document.getElementById('info-ruta').innerText = diaFiltro === 'todos' ? 'Todas las rutas' : 'Día: ' + diaFiltro;
-
-        const listaContenedor = document.getElementById('lista-paradas');
-        listaContenedor.innerHTML = '';
-
-        if (filtrados.length === 0) {
-            listaContenedor.innerHTML = `
-                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-center space-y-2">
-                    <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
-                    <h3 class="text-xs font-bold text-blue-950">No hay entregas registradas</h3>
-                    <p class="text-[11px] text-slate-400">Agrega tu primer cliente desde el botón inferior (+).</p>
-                </div>`;
-            return;
+        function obtenerClientes() {
+            fetch('obtener_clientes.php')
+                .then(res => res.json())
+                .then(clientes => {
+                    clientesGlobales = clientes;
+                    renderizarMapa(diaActual);
+                })
+                .catch(err => {
+                    console.error("Error al obtener clientes de MySQL:", err);
+                    document.getElementById('lista-paradas').innerHTML = `
+                        <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 text-center text-rose-600 text-xs">
+                            <i class="fa-solid fa-triangle-exclamation text-lg mb-1"></i>
+                            <p>No se pudo conectar con MySQL para renderizar el mapa.</p>
+                        </div>`;
+                });
         }
 
-        const coordsLinea = [];
+        function renderizarMapa(diaFiltro = 'todos') {
+            diaActual = diaFiltro;
+            markersGroup.clearLayers();
+            if (routePolyline) map.removeLayer(routePolyline);
+            marcadoresArray = [];
 
-        filtrados.forEach((cliente, index) => {
-            const lat = cliente.lat || 19.412530;
-            const lng = cliente.lng || -99.018240;
-            const punto = [lat, lng];
-            coordsLinea.push(punto);
+            const filtrados = diaFiltro === 'todos' 
+                ? clientesGlobales 
+                : clientesGlobales.filter(c => (c.delivery_day || '').toLowerCase() === diaFiltro.toLowerCase());
 
-            // Crear marcador Leaflet
-            const marker = L.marker(punto).addTo(markersGroup);
-            marker.bindPopup(`
-                <div class="text-xs space-y-1">
-                    <strong class="text-sky-700 text-sm">${index + 1}. ${cliente.nombre}</strong><br>
-                    <span class="text-slate-600"><i class="fa-solid fa-location-dot text-sky-500"></i> ${cliente.direccion || 'N/A'}</span><br>
-                    <span class="font-bold text-slate-800"><i class="fa-solid fa-truck text-sky-500"></i> ${cliente.ruta || 'Ruta 1'} (${cliente.dia || 'Lunes'})</span>
-                </div>
-            `);
+            document.getElementById('badge-total').innerText = filtrados.length + ' Entregas';
+            document.getElementById('info-ruta').innerText = diaFiltro === 'todos' ? 'Todas las rutas' : 'Día: ' + diaFiltro;
 
-            marcadoresArray.push(marker);
+            const listaContenedor = document.getElementById('lista-paradas');
+            listaContenedor.innerHTML = '';
 
-            // Renderizar tarjeta de parada interactiva
-            listaContenedor.innerHTML += `
-                <div onclick="enfocarCliente(${index})" class="bg-slate-50 hover:bg-white p-3.5 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between cursor-pointer">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-sky-100 text-sky-700 rounded-xl font-black text-xs flex items-center justify-center shrink-0 shadow-sm">
-                            ${index + 1}
+            if (filtrados.length === 0) {
+                listaContenedor.innerHTML = `
+                    <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-center space-y-2">
+                        <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
+                        <h3 class="text-xs font-bold text-blue-950">No hay entregas en MySQL</h3>
+                        <p class="text-[11px] text-slate-400">Agrega un cliente desde la pestaña (+).</p>
+                    </div>`;
+                return;
+            }
+
+            const coordsLinea = [];
+
+            filtrados.forEach((cliente, index) => {
+                const lat = parseFloat(cliente.latitude) || 19.412530;
+                const lng = parseFloat(cliente.longitude) || -99.018240;
+                const punto = [lat, lng];
+                coordsLinea.push(punto);
+
+                const marker = L.marker(punto).addTo(markersGroup);
+                marker.bindPopup(`
+                    <div class="text-xs space-y-1">
+                        <strong class="text-sky-700 text-sm">${index + 1}. ${cliente.name}</strong><br>
+                        <span class="text-slate-600"><i class="fa-solid fa-location-dot text-sky-500"></i> ${cliente.address || 'Sin dirección'}</span><br>
+                        <span class="font-bold text-slate-800"><i class="fa-solid fa-truck text-sky-500"></i> ${cliente.route || 'Ruta 1'} (${cliente.delivery_day || 'Lunes'})</span>
+                    </div>
+                `);
+
+                marcadoresArray.push(marker);
+
+                listaContenedor.innerHTML += `
+                    <div onclick="enfocarCliente(${index})" class="bg-slate-50 hover:bg-white p-3 rounded-2xl border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-sky-100 text-sky-700 rounded-xl font-black text-xs flex items-center justify-center shrink-0 shadow-sm">
+                                ${index + 1}
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-blue-950">${cliente.name}</h3>
+                                <p class="text-[11px] text-slate-400 font-medium">${cliente.address || 'Ubicación'}</p>
+                                <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded-lg bg-sky-50 text-sky-600 mt-1">
+                                    ${cliente.route || 'Ruta 1'} • ${cliente.delivery_day || 'Lunes'}
+                                </span>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-xs font-bold text-blue-950">${cliente.nombre}</h3>
-                            <p class="text-[11px] text-slate-400 font-medium">${cliente.direccion || 'Ubicación registrada'}</p>
-                            <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded-lg bg-sky-50 text-sky-600 mt-1">
-                                ${cliente.ruta || 'Ruta 1'} • ${cliente.dia || 'Lunes'}
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-xl border border-sky-100 flex items-center space-x-1">
+                                <i class="fa-solid fa-crosshairs"></i>
+                                <span>Ver</span>
                             </span>
                         </div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[11px] font-bold text-sky-600 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-100 flex items-center space-x-1">
-                            <i class="fa-solid fa-crosshairs"></i>
-                            <span>Centrar</span>
-                        </span>
-                    </div>
-                </div>`;
-        });
+                    </div>`;
+            });
 
-        // Trazar línea de ruta si hay más de un punto
-        if (coordsLinea.length > 1) {
-            routePolyline = L.polyline(coordsLinea, {
-                color: '#0284c7',
-                weight: 4,
-                opacity: 0.8,
-                dashArray: '6, 6'
-            }).addTo(map);
+            if (coordsLinea.length > 1) {
+                routePolyline = L.polyline(coordsLinea, {
+                    color: '#0284c7',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '6, 6'
+                }).addTo(map);
+            }
+
+            if (filtrados.length > 0) {
+                const group = new L.featureGroup(markersGroup.getLayers());
+                map.fitBounds(group.getBounds().pad(0.3));
+            }
         }
 
-        if (filtrados.length > 0) {
-            const group = new L.featureGroup(markersGroup.getLayers());
-            map.fitBounds(group.getBounds().pad(0.3));
+        function enfocarCliente(index) {
+            const marker = marcadoresArray[index];
+            if (marker) {
+                const latLng = marker.getLatLng();
+                map.flyTo(latLng, 17, { animate: true, duration: 1.2 });
+                marker.openPopup();
+            }
         }
-    }
 
-    // Zoom fluido optimizado al hacer clic en una parada
-    function enfocarCliente(index) {
-        const marker = marcadoresArray[index];
-        if (marker) {
-            const latLng = marker.getLatLng();
-            map.flyTo(latLng, 17, { animate: true, duration: 1.2 });
-            marker.openPopup();
+        function filtrarDia(dia) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-sky-600', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+            });
+            event.currentTarget.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+            event.currentTarget.classList.add('bg-sky-600', 'text-white', 'shadow-sm');
+
+            renderizarMapa(dia);
         }
-    }
 
-    // Filtro por día con actualización de estados visuales
-    function filtrarDia(dia) {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('bg-sky-600', 'text-white', 'shadow-sm');
-            btn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200');
-        });
-        event.currentTarget.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200');
-        event.currentTarget.classList.add('bg-sky-600', 'text-white', 'shadow-sm');
-
-        cargarMapa(dia);
-    }
-
-    // Inicializar al cargar la página
-    cargarMapa('todos');
-</script>
+        // Cargar clientes desde MySQL al iniciar
+        obtenerClientes();
+    </script>
 </body>
 </html>
