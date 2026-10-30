@@ -108,19 +108,29 @@
         let clientesGlobales = [];
         let diaActual = 'todos';
 
-        function obtenerClientes() {
+       function obtenerClientes() {
             fetch('obtener_clientes.php')
-                .then(res => res.json())
-                .then(clientes => {
-                    clientesGlobales = clientes;
-                    renderizarMapa(diaActual);
+                .then(res => {
+                    if (!res.ok) throw new Error('Error en el servidor HTTP');
+                    return res.json();
+                })
+                .then(data => {
+                    // Validar estrictamente que sea un arreglo
+                    if (Array.isArray(data)) {
+                        clientesGlobales = data;
+                        renderizarMapa(diaActual);
+                    } else {
+                        console.error("El servidor no devolvió un arreglo válido:", data);
+                        clientesGlobales = [];
+                        renderizarMapa(diaActual);
+                    }
                 })
                 .catch(err => {
                     console.error("Error al obtener clientes de MySQL:", err);
                     document.getElementById('lista-paradas').innerHTML = `
                         <div class="bg-rose-50 p-6 rounded-2xl border border-rose-100 text-center text-rose-600 text-xs">
                             <i class="fa-solid fa-triangle-exclamation text-lg mb-1"></i>
-                            <p>No se pudo conectar con MySQL para renderizar el mapa.</p>
+                            <p>Error de conexión con MySQL. Verifica tu base de datos.</p>
                         </div>`;
                 });
         }
