@@ -5,213 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hielo Moscú - Clientes</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 500: '#0284c7', 600: '#0369a1', dark: '#0f172a' }
-                    }
-                }
-            }
-        }
-    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col pb-20 md:pb-0 md:pl-64">
+<body class="bg-slate-50 text-slate-800 pb-20">
 
-    <!-- SIDEBAR DESKTOP -->
-    <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-white fixed left-0 top-0 bottom-0 z-50 border-r border-slate-800">
-        <div class="p-5 flex items-center gap-3 border-b border-slate-800">
-            <div class="w-10 h-10 rounded-xl bg-sky-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
-                <i class="fa-solid fa-snowflake text-xl"></i>
+    <header class="bg-white border-b border-slate-100 px-4 py-3 sticky top-0 z-50">
+        <div class="flex items-center justify-between max-w-md mx-auto">
+            <div class="flex items-center space-x-2">
+                <div class="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+                    <i class="fa-solid fa-users text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold leading-tight text-slate-900">Directorio</h1>
+                    <p class="text-[10px] text-slate-500 font-medium">Gestión de Clientes</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-bold text-lg tracking-wide text-white">HIELO MOSCÚ</h1>
-                <p class="text-xs text-sky-400 font-semibold">Clientes</p>
-            </div>
-        </div>
-        <nav class="flex-1 p-4 space-y-1.5">
-            <a href="index.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-                <i class="fa-solid fa-map text-lg w-6"></i> Mapa
+            <a href="agregar.html" class="w-8 h-8 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center font-bold text-sm hover:bg-sky-100 transition-colors">
+                <i class="fa-solid fa-plus"></i>
             </a>
-            <a href="clientes.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium bg-sky-600 text-white transition-all shadow-md shadow-sky-600/30">
-                <i class="fa-solid fa-users text-lg w-6"></i> Clientes
-            </a>
-            <a href="rutas.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-                <i class="fa-solid fa-route text-lg w-6"></i> Rutas
-            </a>
-            <a href="agregar.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
-                <i class="fa-solid fa-circle-plus text-lg w-6"></i> Agregar
-            </a>
-        </nav>
-    </aside>
-
-    <!-- HEADER MÓVIL -->
-    <header class="md:hidden bg-white border-b border-slate-200 sticky top-0 z-40 px-4 py-3 flex items-center justify-between shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-sky-500 flex items-center justify-center text-white shadow-md">
-                <i class="fa-solid fa-snowflake text-lg"></i>
-            </div>
-            <div>
-                <h1 class="font-black text-slate-900 text-base leading-none tracking-tight">HIELO MOSCÚ</h1>
-                <span class="text-xs font-bold text-sky-600">Clientes</span>
-            </div>
         </div>
     </header>
 
-    <!-- CONTENIDO -->
-    <main class="flex-1 p-4 md:p-8 max-w-3xl w-full mx-auto space-y-5">
+    <main class="max-w-md mx-auto p-4 space-y-4">
         
-        <!-- Buscador general -->
+        <!-- Buscador -->
         <div class="relative">
-            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
-            <input type="text" id="searchInput" onkeyup="filterClients()" placeholder="Buscar cliente, negocio o zona" class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+            </span>
+            <input type="text" placeholder="Buscar cliente por nombre o zona..." class="input-field pl-9 text-xs">
         </div>
 
-        <!-- Encabezado y Ordenamiento -->
-        <div class="flex items-center justify-between pt-1">
-            <h2 class="text-xl font-extrabold text-slate-900">Lista de clientes</h2>
-            <div class="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                <span>Ordenar por</span>
-                <select id="sortSelect" onchange="sortClients()" class="bg-transparent font-bold text-slate-800 focus:outline-none cursor-pointer">
-                    <option value="nombre">Nombre ∨</option>
-                    <option value="zona">Zona ∨</option>
-                </select>
+        <!-- Estado Vacío -->
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
+            <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fa-solid fa-users-slash text-xl"></i>
             </div>
+            <h3 class="text-xs font-bold text-slate-800">No hay clientes registrados</h3>
+            <p class="text-[11px] text-slate-500 mt-1">Usa el botón superior derecho (+) para agregar tu primer cliente al sistema.</p>
         </div>
 
-        <!-- Lista de tarjetas de Clientes -->
-        <div class="space-y-3" id="clientsContainer">
-            
-            <!-- Item 1 -->
-            <div class="client-card bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3 hover:border-sky-300 transition-all">
-                <div class="space-y-1">
-                    <h3 class="font-extrabold text-slate-900 text-base client-name">Abarrotes Lupita</h3>
-                    <p class="text-xs font-medium text-slate-500 flex items-center gap-1 client-zone">
-                        <i class="fa-solid fa-location-dot text-sky-500"></i> Nezahualcóyotl
-                    </p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex flex-col sm:flex-row gap-1.5">
-                        <span class="badge-route bg-sky-100 text-sky-700">Ruta 1<br><span class="text-[10px] opacity-75">Lunes</span></span>
-                        <span class="badge-route bg-emerald-100 text-emerald-700">Ruta 2<br><span class="text-[10px] opacity-75">Lunes</span></span>
-                    </div>
-                    <button class="w-8 h-8 rounded-full bg-slate-100 text-sky-600 hover:bg-sky-600 hover:text-white flex items-center justify-center transition-all ml-1">
-                        <i class="fa-solid fa-eye text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Item 2 -->
-            <div class="client-card bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3 hover:border-sky-300 transition-all">
-                <div class="space-y-1">
-                    <h3 class="font-extrabold text-slate-900 text-base client-name">Cremería San Juan</h3>
-                    <p class="text-xs font-medium text-slate-500 flex items-center gap-1 client-zone">
-                        <i class="fa-solid fa-location-dot text-sky-500"></i> Chimalhuacán
-                    </p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex flex-col sm:flex-row gap-1.5">
-                        <span class="badge-route bg-rose-100 text-rose-700">Ruta 3<br><span class="text-[10px] opacity-75">Martes</span></span>
-                        <span class="badge-route bg-purple-100 text-purple-700">Ruta 4<br><span class="text-[10px] opacity-75">Martes</span></span>
-                    </div>
-                    <button class="w-8 h-8 rounded-full bg-slate-100 text-sky-600 hover:bg-sky-600 hover:text-white flex items-center justify-center transition-all ml-1">
-                        <i class="fa-solid fa-eye text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Item 3 -->
-            <div class="client-card bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3 hover:border-sky-300 transition-all">
-                <div class="space-y-1">
-                    <h3 class="font-extrabold text-slate-900 text-base client-name">Miscelánea El Sol</h3>
-                    <p class="text-xs font-medium text-slate-500 flex items-center gap-1 client-zone">
-                        <i class="fa-solid fa-location-dot text-sky-500"></i> Ecatepec
-                    </p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex flex-col sm:flex-row gap-1.5">
-                        <span class="badge-route bg-amber-100 text-amber-700">Ruta 5<br><span class="text-[10px] opacity-75">Miércoles</span></span>
-                        <span class="badge-route bg-cyan-100 text-cyan-700">Ruta 6<br><span class="text-[10px] opacity-75">Miércoles</span></span>
-                    </div>
-                    <button class="w-8 h-8 rounded-full bg-slate-100 text-sky-600 hover:bg-sky-600 hover:text-white flex items-center justify-center transition-all ml-1">
-                        <i class="fa-solid fa-eye text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Item 4 -->
-            <div class="client-card bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3 hover:border-sky-300 transition-all">
-                <div class="space-y-1">
-                    <h3 class="font-extrabold text-slate-900 text-base client-name">Abarrotes Del Centro</h3>
-                    <p class="text-xs font-medium text-slate-500 flex items-center gap-1 client-zone">
-                        <i class="fa-solid fa-location-dot text-sky-500"></i> CDMX Oriente
-                    </p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex flex-col sm:flex-row gap-1.5">
-                        <span class="badge-route bg-sky-100 text-sky-700">Ruta 7<br><span class="text-[10px] opacity-75">Jueves</span></span>
-                        <span class="badge-route bg-purple-100 text-purple-700">Ruta 8<br><span class="text-[10px] opacity-75">Jueves</span></span>
-                    </div>
-                    <button class="w-8 h-8 rounded-full bg-slate-100 text-sky-600 hover:bg-sky-600 hover:text-white flex items-center justify-center transition-all ml-1">
-                        <i class="fa-solid fa-eye text-xs"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Item 5 -->
-            <div class="client-card bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3 hover:border-sky-300 transition-all">
-                <div class="space-y-1">
-                    <h3 class="font-extrabold text-slate-900 text-base client-name">CARNESY FEST</h3>
-                    <p class="text-xs font-medium text-slate-500 flex items-center gap-1 client-zone">
-                        <i class="fa-solid fa-location-dot text-sky-500"></i> Ixtapaluca
-                    </p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="flex flex-col sm:flex-row gap-1.5">
-                        <span class="badge-route bg-emerald-100 text-emerald-700">Ruta 9<br><span class="text-[10px] opacity-75">Jueves</span></span>
-                        <span class="badge-route bg-amber-100 text-amber-700">Ruta 10<br><span class="text-[10px] opacity-75">Jueves</span></span>
-                    </div>
-                    <button class="w-8 h-8 rounded-full bg-slate-100 text-sky-600 hover:bg-sky-600 hover:text-white flex items-center justify-center transition-all ml-1">
-                        <i class="fa-solid fa-eye text-xs"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
     </main>
 
-    <!-- BOTTOM NAV MÓVIL -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around p-2 shadow-lg">
-        <a href="index.html" class="flex flex-col items-center gap-1 p-1.5 text-slate-400">
-            <i class="fa-solid fa-map text-lg"></i><span class="text-[10px] font-semibold">Mapa</span>
-        </a>
-        <a href="clientes.html" class="flex flex-col items-center gap-1 p-1.5 text-sky-600 font-extrabold">
-            <i class="fa-solid fa-users text-lg"></i><span class="text-[10px]">Clientes</span>
-        </a>
-        <a href="rutas.html" class="flex flex-col items-center gap-1 p-1.5 text-slate-400">
-            <i class="fa-solid fa-route text-lg"></i><span class="text-[10px] font-semibold">Rutas</span>
-        </a>
-        <a href="agregar.html" class="flex flex-col items-center gap-1 p-1.5 text-slate-400">
-            <i class="fa-solid fa-circle-plus text-lg"></i><span class="text-[10px] font-semibold">Agregar</span>
-        </a>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 py-2 px-4 z-50">
+        <div class="max-w-md mx-auto flex justify-around items-center">
+            <a href="index.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <i class="fa-solid fa-map text-base"></i>
+                <span class="text-[10px] font-medium mt-1">Mapa</span>
+            </a>
+            <a href="clientes.html" class="flex flex-col items-center text-sky-600">
+                <i class="fa-solid fa-users text-base"></i>
+                <span class="text-[10px] font-bold mt-1">Clientes</span>
+            </a>
+            <a href="rutas.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <i class="fa-solid fa-route text-base"></i>
+                <span class="text-[10px] font-medium mt-1">Rutas</span>
+            </a>
+            <a href="agregar.html" class="flex flex-col items-center text-slate-400 hover:text-sky-600 transition-colors">
+                <i class="fa-solid fa-circle-plus text-base"></i>
+                <span class="text-[10px] font-medium mt-1">Agregar</span>
+            </a>
+        </div>
     </nav>
 
-    <script>
-        function filterClients() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.client-card');
-            cards.forEach(card => {
-                const name = card.querySelector('.client-name').innerText.toLowerCase();
-                const zone = card.querySelector('.client-zone').innerText.toLowerCase();
-                if (name.includes(query) || zone.includes(query)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-    </script>
 </body>
 </html>
