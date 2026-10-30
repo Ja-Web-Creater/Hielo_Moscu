@@ -1,0 +1,18 @@
+/* ==========================================================================
+   ESTILOS - AGREGAR Y EDITAR CLIENTE
+   ========================================================================== */
+
+/* Toggle personalizado para Enfriador (Sí / No) */
+.toggle-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Área de notas con contador */
+textarea {
+    scrollbar-width: thin;
+}
+
+/* Caja destacada para sugerencias de ruta */
+.sugerencia-box {
+    background: linear-gradient(180deg, rgba(240, 249, 255, 0.8) 0%, rgba(224, 242, 254, 0.4) 100%);
+}

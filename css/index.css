@@ -1,0 +1,24 @@
+/* ==========================================================================
+   ESTILOS - INDEX (MAPA Y MONITOREO)
+   ========================================================================== */
+
+/* Efectos para los botones filtro de día */
+.filter-btn {
+    letter-spacing: -0.01em;
+    user-select: none;
+}
+
+/* Estilos de los pines y popup dentro del mapa */
+#map {
+    background-color: #f8fafc;
+}
+
+/* Animación de pulso para el indicador de ruta activa */
+.pulse-badge {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}

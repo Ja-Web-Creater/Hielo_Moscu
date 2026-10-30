@@ -1,0 +1,12 @@
+/* ==========================================================================
+   ESTILOS - RUTAS (LISTA Y COBERTURA)
+   ========================================================================== */
+
+.ruta-dot {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+/* Tarjetas resumen de total de rutas y zonas */
+.stat-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}

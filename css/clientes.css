@@ -1,0 +1,17 @@
+/* ==========================================================================
+   ESTILOS - CLIENTES (DIRECTORIO)
+   ========================================================================== */
+
+.cliente-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cliente-card:active {
+    transform: scale(0.98);
+}
+
+/* Insignias o badges dobles de ruta */
+.badge-ruta {
+    min-width: 52px;
+    letter-spacing: -0.02em;
+}
