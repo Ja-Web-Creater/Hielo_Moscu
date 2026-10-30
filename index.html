@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - Mapa de Reparto</title>
+    <title>Hielo Moscú - Mapa y Rutas Internas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -20,7 +20,7 @@
                 </div>
                 <div>
                     <h1 class="text-sm font-bold leading-tight text-slate-900">Hielo Moscú</h1>
-                    <p class="text-[10px] text-slate-500 font-medium">Navegación de Entregas</p>
+                    <p class="text-[10px] text-slate-500 font-medium">Sistema GPS Interno</p>
                 </div>
             </div>
             <span id="badge-total" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-50 text-sky-600 border border-sky-100">
@@ -29,12 +29,11 @@
         </div>
     </header>
 
-    <!-- Contenido -->
     <main class="max-w-md mx-auto p-4 space-y-4">
         
-        <!-- Filtro de Días -->
+        <!-- Filtro por Días -->
         <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
-            <p class="text-[11px] font-bold text-slate-700 mb-2 px-1"><i class="fa-solid fa-filter text-sky-500 mr-1"></i> Filtrar por Día de Entrega</p>
+            <p class="text-[11px] font-bold text-slate-700 mb-2 px-1"><i class="fa-solid fa-filter text-sky-500 mr-1"></i> Filtrar Entregas por Día</p>
             <div class="flex space-x-1.5 overflow-x-auto no-scrollbar pb-1">
                 <button onclick="filtrarDia('todos')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-600 text-white transition-all shrink-0">Todos</button>
                 <button onclick="filtrarDia('Lunes')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition-all shrink-0">Lunes</button>
@@ -46,23 +45,22 @@
             </div>
         </div>
 
-        <!-- Mapa -->
+        <!-- Mapa Interno de la App -->
         <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
             <div class="flex items-center justify-between mb-2 px-1">
-                <h2 class="text-xs font-bold text-slate-700"><i class="fa-solid fa-map-location-dot text-sky-500 mr-1"></i> Guía de Ruta del Mensajero</h2>
-                <span id="info-ruta" class="text-[10px] font-semibold text-slate-400">Sin filtro aplicado</span>
+                <h2 class="text-xs font-bold text-slate-700"><i class="fa-solid fa-map-location-dot text-sky-500 mr-1"></i> Mapa de Operación Interno</h2>
+                <span id="info-ruta" class="text-[10px] font-semibold text-slate-400">Vista general</span>
             </div>
             <div id="map" class="w-full h-80 rounded-xl overflow-hidden border border-slate-100 z-10"></div>
         </div>
 
-        <!-- Lista de Paradas para la Ruta -->
+        <!-- Lista de Paradas Interactiva Interna -->
         <div id="lista-paradas" class="space-y-2">
             <!-- Se genera dinámicamente -->
         </div>
 
     </main>
 
-    <!-- Barra de Navegación -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-100 py-2 px-4 z-50">
         <div class="max-w-md mx-auto flex justify-around items-center">
             <a href="index.html" class="flex flex-col items-center text-sky-600">
@@ -87,17 +85,19 @@
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
-        const map = L.map('map').setView([19.4326, -99.1332], 12);
+        const map = L.map('map').setView([19.412530, -99.018240], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
         let markersGroup = L.layerGroup().addTo(map);
         let routePolyline = null;
+        let marcadoresArray = [];
 
         function cargarMapa(diaFiltro = 'todos') {
             markersGroup.clearLayers();
             if (routePolyline) map.removeLayer(routePolyline);
+            marcadoresArray = [];
 
             const clientes = JSON.parse(localStorage.getItem('hielo_moscu_clientes')) || [];
             
@@ -116,7 +116,7 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
                         <i class="fa-solid fa-location-dot text-2xl text-slate-300 mb-2"></i>
                         <h3 class="text-xs font-bold text-slate-700">No hay entregas para mostrar</h3>
-                        <p class="text-[10px] text-slate-400 mt-0.5">Registra clientes en la pestaña "Agregar" asignándoles este día.</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Registra clientes en la pestaña "Agregar".</p>
                     </div>`;
                 return;
             }
@@ -127,22 +127,22 @@
                 const punto = [cliente.lat, cliente.lng];
                 coordsLinea.push(punto);
 
-                // Crear Marcador
+                // Crear Marcador Interno en el Mapa
                 const marker = L.marker(punto).addTo(markersGroup);
                 marker.bindPopup(`
-                    <div class="text-xs">
-                        <strong class="text-sky-700">${index + 1}. ${cliente.nombre}</strong><br>
-                        <span class="text-slate-600"><i class="fa-solid fa-location-dot"></i> ${cliente.direccion}</span><br>
-                        <span class="font-bold text-slate-800"><i class="fa-solid fa-truck"></i> ${cliente.ruta} (${cliente.dia})</span><br>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${cliente.lat},${cliente.lng}" target="_blank" class="inline-block mt-2 bg-sky-600 text-white px-2 py-1 rounded text-[10px] font-bold">
-                            <i class="fa-solid fa-diamond-turn-right"></i> Ir con GPS
-                        </a>
+                    <div class="text-xs space-y-1">
+                        <strong class="text-sky-700 text-sm">${index + 1}. ${cliente.nombre}</strong><br>
+                        <span class="text-slate-600"><i class="fa-solid fa-location-dot text-sky-500"></i> ${cliente.direccion}</span><br>
+                        <span class="font-bold text-slate-800"><i class="fa-solid fa-truck text-sky-500"></i> ${cliente.ruta} (${cliente.dia})</span><br>
+                        <span class="text-slate-500 block"><i class="fa-solid fa-phone text-sky-500"></i> ${cliente.telefono || 'Sin teléfono'}</span>
                     </div>
                 `);
 
-                // Crear tarjeta de parada
+                marcadoresArray.push(marker);
+
+                // Tarjeta de parada: Al hacer clic, CENTRA EL MAPA INTERNO (Sin abrir Google Maps)
                 listaContenedor.innerHTML += `
-                    <div class="bg-white p-3 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                    <div onclick="enfocarCliente(${index})" class="bg-white p-3 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm cursor-pointer hover:border-sky-300 transition-all">
                         <div class="flex items-center space-x-3">
                             <div class="w-7 h-7 bg-sky-100 text-sky-700 rounded-full font-bold text-xs flex items-center justify-center shrink-0">
                                 ${index + 1}
@@ -150,28 +150,41 @@
                             <div>
                                 <h4 class="text-xs font-bold text-slate-800">${cliente.nombre}</h4>
                                 <p class="text-[10px] text-slate-500">${cliente.direccion}</p>
-                                <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded bg-slate-100 text-slate-600 mt-1">${cliente.ruta}</span>
+                                <span class="inline-block px-2 py-0.5 text-[9px] font-bold rounded bg-sky-50 text-sky-600 mt-1">${cliente.ruta} • ${cliente.dia}</span>
                             </div>
                         </div>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${cliente.lat},${cliente.lng}" target="_blank" class="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-location-arrow"></i>
-                        </a>
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-1 rounded-lg">
+                                <i class="fa-solid fa-crosshairs mr-1"></i> Ver en Mapa
+                            </span>
+                        </div>
                     </div>`;
             });
 
-            // Trazar línea de ruta entre puntos para el mensajero
+            // Trazar línea de ruta interna
             if (coordsLinea.length > 1) {
                 routePolyline = L.polyline(coordsLinea, {
                     color: '#0284c7',
                     weight: 4,
-                    opacity: 0.7,
+                    opacity: 0.8,
                     dashArray: '8, 8'
                 }).addTo(map);
             }
 
-            // Ajustar vista del mapa para encuadrar todos los marcadores
-            const group = new L.featureGroup(markersGroup.getLayers());
-            map.fitBounds(group.getBounds().pad(0.2));
+            if (filtrados.length > 0) {
+                const group = new L.featureGroup(markersGroup.getLayers());
+                map.fitBounds(group.getBounds().pad(0.3));
+            }
+        }
+
+        // Función para enfocar el mapa interno en una parada específica al tocarla
+        function enfocarCliente(index) {
+            const marker = marcadoresArray[index];
+            if (marker) {
+                const latLng = marker.getLatLng();
+                map.setView(latLng, 17, { animate: true });
+                marker.openPopup();
+            }
         }
 
         function filtrarDia(dia) {
@@ -185,7 +198,6 @@
             cargarMapa(dia);
         }
 
-        // Cargar mapa al abrir
         cargarMapa('todos');
     </script>
 </body>
