@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hielo Moscú - GPS Nacional y Rutas</title>
+    <title>Hielo Moscú - Alta de Clientes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -16,16 +16,13 @@
         <div class="flex items-center justify-between max-w-md mx-auto">
             <div class="flex items-center space-x-2">
                 <div class="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center text-white shadow-md shadow-sky-500/20">
-                    <i class="fa-solid fa-location-crosshairs text-lg"></i>
+                    <i class="fa-solid fa-location-dot text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm font-bold leading-tight text-slate-900">GPS Hielo Moscú</h1>
-                    <p class="text-[10px] text-slate-500 font-medium">Localización Nacional México</p>
+                    <h1 class="text-sm font-bold leading-tight text-slate-900">Hielo Moscú</h1>
+                    <p class="text-[10px] text-slate-500 font-medium">Registro de Clientes y Ubicación</p>
                 </div>
             </div>
-            <span class="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-full border border-emerald-100">
-                <i class="fa-solid fa-signal mr-1 animate-pulse"></i> GPS Activo
-            </span>
         </div>
     </header>
 
@@ -44,36 +41,28 @@
                     <input type="tel" id="telefono" placeholder="Ej. 5512345678" class="input-field">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-map-location-dot text-sky-500 mr-1"></i> Estado / Municipio *</label>
-                    <input type="text" id="estado" required value="Nezahualcóyotl, Estado de México" placeholder="Ej. Nezahualcóyotl..." class="input-field">
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid map-location-dot text-sky-500 mr-1"></i> Municipio / Zona *</label>
+                    <input type="text" id="estado" required value="Nezahualcóyotl, Méx." class="input-field">
                 </div>
             </div>
 
-            <!-- Módulo de Dirección y Buscador Nacional -->
             <div>
-                <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-location-dot text-sky-500 mr-1"></i> Dirección Exacta de Entrega *</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="direccion" required placeholder="Ej. Av Cuauhtémoc 70, Pavon" class="input-field">
-                    <button type="button" onclick="buscarDireccionNacional()" class="px-3.5 bg-sky-600 text-white rounded-xl text-xs font-bold hover:bg-sky-700 transition-colors shrink-0 shadow-sm">
-                        <i class="fa-solid fa-magnifying-glass"></i> Buscar
-                    </button>
-                </div>
-                <span class="text-[10px] text-slate-400 mt-1 block">Escribe la calle y número. Si no aparece, simplemente toca el mapa donde está el local.</span>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1"><i class="fa-solid fa-road text-sky-500 mr-1"></i> Dirección Textual (Calle y Número) *</label>
+                <input type="text" id="direccion" required placeholder="Ej. Av Cuauhtémoc 70, Pavon" class="input-field">
             </div>
 
-            <!-- Sensor GPS Satelital y Controles -->
+            <!-- Mapa Táctil Infalible Centrado en Neza -->
             <div class="p-3 bg-sky-50/60 rounded-xl border border-sky-100 space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="text-[11px] font-bold text-sky-900"><i class="fa-solid fa-satellite-dish text-sky-600 mr-1"></i> Ubicación GPS en Mapa</span>
-                    <button type="button" onclick="obtenerGpsNativo()" class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg hover:bg-emerald-200 transition-colors">
-                        <i class="fa-solid fa-crosshairs mr-1"></i> Mi GPS Actual
+                    <span class="text-[11px] font-bold text-sky-900"><i class="fa-solid fa-map-pin text-sky-600 mr-1"></i> Ubicación Táctil en Nezahualcóyotl</span>
+                    <button type="button" onclick="centrarEnNeza()" class="text-[10px] font-bold text-sky-700 bg-white px-2.5 py-1 rounded-lg border border-sky-200 shadow-sm">
+                        <i class="fa-solid fa-crosshairs mr-1"></i> Centrar en Neza
                     </button>
                 </div>
                 
-                <!-- Mapa Universal con Pin Arrastrable -->
-                <div id="previewMap" class="w-full h-60 rounded-xl border border-slate-200"></div>
-                <p class="text-[10px] text-slate-500 text-center font-medium">
-                    <i class="fa-solid fa-hand-pointer text-sky-500 mr-1"></i> Toca el mapa o arrastra el pin azul a la puerta exacta del cliente.
+                <div id="previewMap" class="w-full h-64 rounded-xl border border-slate-200"></div>
+                <p class="text-[10px] text-slate-600 text-center font-bold bg-white p-2 rounded-lg border border-slate-200">
+                    👆 Toca el mapa o arrastra el marcador rojo al local exacto del cliente.
                 </p>
             </div>
 
@@ -106,7 +95,7 @@
             <input type="hidden" id="longitud" value="-99.018240">
 
             <button type="submit" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-sky-600/20 active:scale-[0.98]">
-                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Guardar Cliente y Generar GPS
+                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Guardar Cliente en el Sistema
             </button>
         </form>
     </main>
@@ -132,12 +121,13 @@
         </div>
     </nav>
 
-    <!-- Leaflet JS Engine -->
+    <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script>
+        // Coordenadas exactas por defecto en Nezahualcóyotl (Av. Cuauhtémoc)
         let latSel = 19.412530, lngSel = -99.018240;
 
-        const previewMap = L.map('previewMap').setView([latSel, lngSel], 15);
+        const previewMap = L.map('previewMap').setView([latSel, lngSel], 16);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; OpenStreetMap'
@@ -162,65 +152,10 @@
             guardarCoordenadas(e.latlng.lat, e.latlng.lng);
         });
 
-        function obtenerGpsNativo() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        previewMap.flyTo([lat, lng], 17, { animate: true });
-                        marker.setLatLng([lat, lng]);
-                        guardarCoordenadas(lat, lng);
-                        alert('📍 GPS detectado con éxito.');
-                    },
-                    function(error) {
-                        alert('No se pudo acceder al GPS.');
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            }
-        }
-
-        // Buscador Inteligente con respaldo automático para México
-        async function buscarDireccionNacional() {
-            const dir = document.getElementById('direccion').value;
-            const edo = document.getElementById('estado').value;
-
-            if (!dir) return alert('Escribe la dirección exacta en el campo.');
-
-            const query = `${dir}, ${edo}, México`;
-            
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-                const data = await res.json();
-
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lng = parseFloat(data[0].lon);
-
-                    previewMap.flyTo([lat, lng], 17, { animate: true, duration: 1.5 });
-                    marker.setLatLng([lat, lng]);
-                    guardarCoordenadas(lat, lng);
-                } else {
-                    // Intento de respaldo: Buscar solo por municipio si la calle exacta no arroja resultados
-                    const queryRespaldo = `${edo}, México`;
-                    const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryRespaldo)}`);
-                    const data2 = await res2.json();
-
-                    if (data2 && data2.length > 0) {
-                        const lat = parseFloat(data2[0].lat);
-                        const lng = parseFloat(data2[0].lon);
-                        previewMap.flyTo([lat, lng], 14, { animate: true });
-                        marker.setLatLng([lat, lng]);
-                        guardarCoordenadas(lat, lng);
-                    }
-                    
-                    // Aviso amigable sin bloquear
-                    alert('📍 Ubicación aproximada centrada. Toca directamente en el mapa la ubicación exacta del local para afinar el pin.');
-                }
-            } catch (err) {
-                alert('📍 Toca directamente en el mapa para colocar el pin en la ubicación del cliente.');
-            }
+        function centrarEnNeza() {
+            previewMap.setView([19.412530, -99.018240], 16);
+            marker.setLatLng([19.412530, -99.018240]);
+            guardarCoordenadas(19.412530, -99.018240);
         }
 
         // Guardar cliente
@@ -243,7 +178,7 @@
             clientes.push(nuevoCliente);
             localStorage.setItem('hielo_moscu_clientes', JSON.stringify(clientes));
 
-            alert('✅ ¡Cliente y su ubicación GPS guardados con éxito!');
+            alert('✅ ¡Cliente guardado con éxito en Nezahualcóyotl!');
             window.location.href = 'index.html';
         });
     </script>
