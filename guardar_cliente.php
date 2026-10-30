@@ -1,51 +1,56 @@
 <?php
 /**
- * Script para procesar y guardar clientes en MySQL - Hielo Moscú
+ * Script para guardar clientes en MySQL - Hielo Moscú
  */
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 require_once 'conexion.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Recoger datos enviados desde el formulario
-        $nombre = $_POST['nombre'] ?? '';
-        $direccion = $_POST['ubicacionTexto'] ?? '';
-        $ruta = $_POST['ruta'] ?? 'Ruta 1';
-        $dia = $_POST['dia'] ?? 'Lunes';
-        $serie = $_POST['serie'] ?? '';
-        $capacidad = $_POST['capacidad'] ?? '';
-        $notas = $_POST['notas'] ?? '';
-        $lat = $_POST['latitud'] ?? 19.412530;
-        $lng = $_POST['longitud'] ?? -99.018240;
-
-        if (empty($nombre) || empty($direccion)) {
-            echo json_encode(["success" => false, "error" => "El nombre y la ubicación son obligatorios."], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        // Insertar en la tabla de clientes (ajusta los nombres de columnas según tu DBeaver si es necesario)
-        $sql = "INSERT INTO customers (name, address, route, delivery_day, notes, latitude, longitude, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$nombre, $direccion, $ruta, $dia, $notas, $lat, $lng]);
+        // Capturar y limpiar datos del formulario con valores por defecto para campos obligatorios
+        $nombre = trim($_POST['nombre'] ?? '');
+        $ubicacionTexto = trim($_POST['ubicacionTexto'] ?? '');
+        $ruta = trim($_POST['ruta'] ?? 'Ruta 1');
+        $lat = $_POST['latitud'] ?? '19.412530';
+        $lng = $_POST['longitud'] ?? '-99.018240';
+        $notas = trim($_POST['notas'] ?? '');
         
-        $customerId = $pdo->lastInsertId();
+        // Campos requeridos por tu BD que no están en el formulario básico
+        $phone = trim($_POST['phone'] ?? '0000000000'); // Teléfono por defecto si no se llena
+        $contact = trim($_POST['contact'] ?? '');
 
-        // Si tiene enfriador registrado, lo guardamos en su respectiva tabla
-        if (!empty($serie) || !empty($capacidad)) {
-            $sqlCooler = "INSERT INTO coolers (customer_id, serial_number, capacity, status) VALUES (?, ?, ?, 'Activo')";
-            $stmtCooler = $pdo->prepare($sqlCooler);
-            $stmtCooler->execute([$customerId, $serie, $capacidad]);
+        if (empty($nombre)) {
+            throw new Exception("El nombre del negocio es obligatorio.");
         }
 
-        echo json_encode(["success" => true, "message" => "Cliente guardado exitosamente en MySQL."], JSON_UNESCAPED_UNICODE);
+        // Insertar usando los nombres exactos de columnas de tu tabla
+        $sql = "INSERT INTO customers (name, contact, phone, address, lat, lng, notes, active, route, created_at, updated_at) 
+                VALUES (:name, :contact, :phone, :address, :lat, :lng, :notes, 1, :route, NOW(), NOW())";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':name' => $nombre,
+            ':contact' => $contact,
+            ':phone' => $phone,
+            ':address' => $ubicacionTexto,
+            ':lat' => $lat,
+            ':lng' => $lng,
+            ':notes' => $notas,
+            ':route' => $ruta
+        ]);
+
+        echo json_encode(["success" => true, "message" => "Cliente guardado exitosamente"]);
 
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["success" => false, "error" => "Error en BD: " . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+        echo json_encode(["success" => false, "error" => $e->getMessage()]);
     }
 } else {
     http_response_code(405);
-    echo json_encode(["success" => false, "error" => "Método no permitido."], JSON_UNESCAPED_UNICODE);
+    echo json_encode(["success" => false, "error" => "Método no permitido"]);
 }
 ?>
