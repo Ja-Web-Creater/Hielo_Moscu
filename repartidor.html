@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Hielo Moscú - GPS Repartidor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 flex flex-col items-center justify-center h-screen">
+
+    <div class="bg-white p-6 rounded-lg shadow-md text-center max-w-sm w-full">
+        <h1 class="text-xl font-bold text-slate-800 mb-2">Panel de Repartidor</h1>
+        <p class="text-sm text-slate-600 mb-4">Mantén esta página abierta mientras realizas las entregas.</p>
+        
+        <div id="status" class="text-amber-600 font-semibold mb-4">Esperando GPS...</div>
+        
+        <button onclick="iniciarGPS()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition">
+            Iniciar Transmisión de Ruta
+        </button>
+    </div>
+
+    <script>
+        function iniciarGPS() {
+            const statusDiv = document.getElementById('status');
+            
+            if (navigator.geolocation) {
+                statusDiv.textContent = "Transmitiendo ubicación GPS...";
+                statusDiv.className = "text-green-600 font-semibold mb-4";
+
+                // watchPosition detecta cada movimiento del teléfono automáticamente
+                navigator.geolocation.watchPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Envía las coordenadas en segundo plano a tu script PHP
+                    fetch('actualizar_ubicacion.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `driver_name=JuanRepartidor&lat=${lat}&lng=${lng}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Ubicación actualizada en servidor", data);
+                    })
+                    .catch(err => console.error("Error al enviar:", err));
+
+                }, error => {
+                    statusDiv.textContent = "Error de GPS: " + error.message;
+                    statusDiv.className = "text-red-600 font-semibold mb-4";
+                }, { 
+                    enableHighAccuracy: true,
+                    maximumAge: 10000,
+                    timeout: 5000
+                });
+            } else {
+                alert("Tu navegador no soporta geolocalización.");
+            }
+        }
+    </script>
+</body>
+</html>
