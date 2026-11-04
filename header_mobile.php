@@ -1,5 +1,5 @@
 <?php
-// Componente de diseño adaptable (Mobile Shell para PC/Tablet/Celular)
+// Componente adaptativo universal: Ancho completo en PC/Tablet, compacto en móvil
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -13,14 +13,14 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            background-color: #f1f5f9;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-0 sm:p-4 font-sans">
-    <!-- Contenedor adaptativo: Ocupa toda la pantalla en celular, y formato tarjeta móvil elegante en Tablet y PC -->
-    <div class="w-full sm:max-w-md min-h-screen sm:min-h-[85vh] sm:rounded-[3rem] bg-slate-50 shadow-2xl flex flex-col justify-between relative overflow-hidden border-0 sm:border-8 sm:border-slate-800">
-        
-        <!-- Contenido dinámico de cada vista -->
-        <div class="flex-1 overflow-y-auto pb-28">
+<body class="font-sans flex flex-col min-h-screen">
+    <!-- Contenedor principal que se expande por completo en PC y tablets -->
+    <div class="w-full flex-1 flex flex-col justify-between relative pb-28">
+        <div class="w-full flex-1">
