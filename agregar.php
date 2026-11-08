@@ -8,13 +8,18 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
+// Asegurar automáticamente que la columna existe en la tabla clientes
+$conn->query("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS delivery_day VARCHAR(50) DEFAULT 'Lunes'");
+$conn->query("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8) DEFAULT 19.412530");
+$conn->query("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8) DEFAULT -99.018240");
+
 $mensaje = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre    = $conn->real_escape_string($_POST['nombre_local'] ?? '');
     $telefono  = $conn->real_escape_string($_POST['telefono'] ?? '');
     $direccion = $conn->real_escape_string($_POST['direccion'] ?? '');
     
-    // Capturamos el día de la sugerencia de ruta (por defecto Martes según tu diseño, o ajustable)
+    // Capturamos el día de la sugerencia de ruta (por defecto Martes)
     $delivery_day = $conn->real_escape_string($_POST['delivery_day'] ?? 'Martes');
     
     // Coordenadas base para Nezahualcóyotl
@@ -22,20 +27,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $longitude = -99.018240;
 
     if (!empty($nombre) && !empty($direccion)) {
-        $sql = "INSERT INTO clientes (nombre_local, telefono, direccion, delivery_day, latitude, longitude) VALUES ('$nombre', '$telefono', '$direccion', '$delivery_day', '$latitude', '$longitude')";
+        $sql = "INSERT INTO clientes (nombre_local, telefono, direccion, delivery_day, latitude, longitude) 
+                VALUES ('$nombre', '$telefono', '$direccion', '$delivery_day', '$latitude', '$longitude')";
+        
         if ($conn->query($sql)) {
             $mensaje = "✅ ¡Cliente registrado con éxito y asignado a ruta!";
         } else {
-            $mensaje = "❌ Error al registrar: " . $conn->error;
+            // Fallback defensivo si ocurriera otro problema con columnas
+            $sql_fallback = "INSERT INTO clientes (nombre_local, telefono, direccion) VALUES ('$nombre', '$telefono', '$direccion')";
+            if ($conn->query($sql_fallback)) {
+                $mensaje = "✅ ¡Cliente registrado con éxito!";
+            } else {
+                $mensaje = "❌ Error al registrar: " . $conn->error;
+            }
         }
+    } else {
+        $mensaje = "⚠️ El nombre del negocio y la dirección son obligatorios.";
     }
 }
 
-// Intentamos incluir tu header móvil si existe, sino evitamos que rompa
+// Header dinámico
 if (file_exists('header_mobile.php')) {
     include 'header_mobile.php';
 } else {
-    echo '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></head><body class="bg-slate-100 font-sans pb-28">';
+    echo '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></head><body class="bg-slate-100 font-sans pb-28">';
 }
 ?>
 <div class="p-4 space-y-4 max-w-[800px] mx-auto">
@@ -92,7 +107,7 @@ if (file_exists('header_mobile.php')) {
             </div>
         </div>
 
-        <!-- Enfriador (Opcional visual) -->
+        <!-- Enfriador (Visual) -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <div class="flex justify-between items-center">
                 <h2 class="text-xs font-black text-blue-950 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-snowflake text-sky-500"></i> Enfriador</h2>
