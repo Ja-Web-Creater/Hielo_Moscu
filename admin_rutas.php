@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
         if ($conn->query("INSERT INTO repartidores (nombre, telefono) VALUES ('$nombre', '$tel')")) {
             $mensaje = "✅ ¡Repartidor registrado con éxito!";
         }
-    } elseif ($_POST['accion'] == 'asignar_ruta') {
+    }  elseif ($_POST['accion'] == 'asignar_ruta') {
         $id_rep = intval($_POST['id_repartidor']);
         $dia = $conn->real_escape_string($_POST['dia_semana']);
         $nom_ruta = $conn->real_escape_string($_POST['nombre_ruta']);
@@ -133,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
         // Sincronizar también el día en la tabla clientes
         $conn->query("UPDATE clientes SET delivery_day = '$dia' WHERE id_cliente = $id_cli");
 
+        // Buscar o crear la ruta para ese repartidor y día
         $res = $conn->query("SELECT id_ruta FROM rutas WHERE id_repartidor = $id_rep AND dia_semana = '$dia' LIMIT 1");
         if ($res && $res->num_rows > 0) {
             $id_ruta = $res->fetch_assoc()['id_ruta'];
@@ -140,8 +141,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
             $conn->query("INSERT INTO rutas (id_repartidor, dia_semana, nombre_ruta) VALUES ($id_rep, '$dia', '$nom_ruta')");
             $id_ruta = $conn->insert_id;
         }
-        if ($conn->query("INSERT INTO detalles_ruta (id_ruta, id_cliente, orden_entrega, estatus) VALUES ($id_ruta, $id_cli, $orden, 'Pendiente')")) {
-            $mensaje = "✅ ¡Asignado a la ruta correctamente!";
+
+        // VALIDACIÓN ANTI-DUPLICADOS: Verificar si el cliente ya está asignado a esta ruta
+        $checar_duplicado = $conn->query("SELECT id_detalle FROM detalles_ruta WHERE id_ruta = $id_ruta AND id_cliente = $id_cli");
+        if ($checar_duplicado && $checar_duplicado->num_rows > 0) {
+            $mensaje = "⚠️ Este cliente ya está asignado a esta ruta (evitado duplicado).";
+        } else {
+            if ($conn->query("INSERT INTO detalles_ruta (id_ruta, id_cliente, orden_entrega, estatus) VALUES ($id_ruta, $id_cli, $orden, 'Pendiente')")) {
+                $mensaje = "✅ ¡Asignado a la ruta correctamente!";
+            }
         }
     }
 }
