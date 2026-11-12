@@ -6,7 +6,7 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
-// Auto-creación y blindaje de tablas con estructura fija por dispositivos
+// Auto-creación y blindaje de tablas con estructura fija por dispositivos (Únicamente 3 dispositivos)
 $conn->query("CREATE TABLE IF NOT EXISTS clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
     nombre_local VARCHAR(150) NOT NULL,
@@ -23,7 +23,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS repartidores (
     telefono VARCHAR(50)
 )");
 
-// Insertar automáticamente los 4 dispositivos predeterminados si la tabla está vacía
+// Insertar automáticamente los 3 dispositivos principales si la tabla está vacía
 $check_rep = $conn->query("SELECT COUNT(*) as total FROM repartidores");
 if ($check_rep) {
     $row_rep = $check_rep->fetch_assoc();
@@ -31,8 +31,7 @@ if ($check_rep) {
         $conn->query("INSERT INTO repartidores (id_repartidor, nombre, telefono) VALUES 
             (1, 'Operador 1 (Teléfono 1)', 'Dispositivo 1'),
             (2, 'Operador 2 (Teléfono 2)', 'Dispositivo 2'),
-            (3, 'Operador 3 (Teléfono 3)', 'Dispositivo 3'),
-            (4, 'Operador X (Domingo)', 'Dispositivo Domingo')");
+            (3, 'Operador 3 (Teléfono 3)', 'Dispositivo 3')");
     }
 }
 
@@ -134,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
         $nombre = $conn->real_escape_string($_POST['nombre_repartidor']);
         $tel = $conn->real_escape_string($_POST['telefono_repartidor']);
         if ($conn->query("INSERT INTO repartidores (nombre, telefono) VALUES ('$nombre', '$tel')")) {
-            $mensaje = "✅ ¡Dispositivo/Operador registrado con éxito!";
+            $mensaje = "✅ ¡Dispositivo registrado con éxito!";
         }
     } elseif ($_POST['accion'] == 'asignar_ruta') {
         $id_rep = intval($_POST['id_repartidor']);
@@ -178,7 +177,8 @@ if (isset($_GET['editar'])) {
 }
 
 $clientes = $conn->query("SELECT * FROM clientes ORDER BY nombre_local ASC");
-$repartidores = $conn->query("SELECT * FROM repartidores ORDER BY id_repartidor ASC");
+// Mostrar únicamente los 3 dispositivos principales (IDs 1, 2, 3)
+$repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN (1, 2, 3) ORDER BY id_repartidor ASC");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -195,7 +195,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY id_repartidor 
         <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold">🧊 Hielo Moscú - Panel de Oficina</h1>
-                <p class="text-xs text-blue-100 mt-1">Gestión por Dispositivos Fijos (Operador 1, 2, 3 y X)</p>
+                <p class="text-xs text-blue-100 mt-1">Gestión por 3 Dispositivos Fijos</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="index.php" class="bg-white text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm"><i class="fa-solid fa-house"></i> Inicio</a>
@@ -247,33 +247,16 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY id_repartidor 
         <?php endif; ?>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Registrar / Gestionar Dispositivos -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-mobile-screen text-blue-600 mr-2"></i> Registrar Dispositivo / Operador</h2>
-                <form method="POST" class="space-y-3">
-                    <input type="hidden" name="accion" value="crear_repartidor">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Dispositivo / Operador</label>
-                        <input type="text" name="nombre_repartidor" required placeholder="Ej. Operador 4" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Descripción / Referencia</label>
-                        <input type="text" name="telefono_repartidor" required placeholder="Ej. Teléfono Adicional" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
-                    </div>
-                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-sm">Guardar Dispositivo</button>
-                </form>
-            </div>
-
             <!-- Asignar Cliente a Ruta por Dispositivo -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-route text-blue-600 mr-2"></i> Asignar Ruta a Dispositivo</h2>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 md:col-span-2">
+                <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-route text-blue-600 mr-2"></i> Asignar Ruta a Dispositivo Fijo</h2>
                 <form method="POST" class="space-y-3">
                     <input type="hidden" name="accion" value="asignar_ruta">
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Dispositivo Fijo</label>
                             <select name="id_repartidor" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-bold">
-                                <option value="">-- Seleccionar --</option>
+                                <option value="">-- Seleccionar Dispositivo --</option>
                                 <?php if($repartidores) { $repartidores->data_seek(0); while($r = $repartidores->fetch_assoc()): ?>
                                     <option value="<?php echo $r['id_repartidor']; ?>"><?php echo $r['nombre']; ?></option>
                                 <?php endwhile; } ?>
@@ -288,11 +271,11 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY id_repartidor 
                             </select>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
                             <label class="block text-xs font-bold text-slate-600 mb-1">Cliente</label>
                             <select name="id_cliente" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-bold">
-                                <option value="">-- Seleccionar --</option>
+                                <option value="">-- Seleccionar Cliente --</option>
                                 <?php if($clientes) { $clientes->data_seek(0); while($c = $clientes->fetch_assoc()): ?>
                                     <option value="<?php echo $c['id_cliente']; ?>"><?php echo $c['nombre_local']; ?></option>
                                 <?php endwhile; } ?>
@@ -300,7 +283,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY id_repartidor 
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Orden #</label>
-                            <input type="number" name="orden_entrega" value="1" min="1" required class="w-full border border-slate-300 rounded-xl p-2 text-xs bg-white font-bold">
+                            <input type="number" name="orden_entrega" value="1" min="1" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-bold">
                         </div>
                     </div>
                     <div>
