@@ -6,7 +6,7 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
-// Auto-creación y blindaje de tablas con estructura fija por dispositivos (Únicamente 3 dispositivos)
+
 $conn->query("CREATE TABLE IF NOT EXISTS clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
     nombre_local VARCHAR(150) NOT NULL,
@@ -195,7 +195,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
         <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold">🧊 Hielo Moscú - Panel de Oficina</h1>
-                <p class="text-xs text-blue-100 mt-1">Gestión por 3 Dispositivos Fijos</p>
+                <p class="text-xs text-blue-100 mt-1"> </p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="index.php" class="bg-white text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm"><i class="fa-solid fa-house"></i> Inicio</a>

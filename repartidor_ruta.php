@@ -118,11 +118,11 @@ if (!empty($id_rep_sel)) {
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Chofer del Día</label>
-                            <input type="text" name="nombre_chofer" required placeholder="Ej. Luis / Julio" value="<?php echo $turno_actual['nombre_chofer'] ?? ''; ?>" class="w-full border border-amber-300 rounded-xl p-2 text-xs bg-white font-semibold">
+                            <input type="text" name="nombre_chofer" required placeholder="Ej. Jesus" value="<?php echo $turno_actual['nombre_chofer'] ?? ''; ?>" class="w-full border border-amber-300 rounded-xl p-2 text-xs bg-white font-semibold">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Camión / Unidad</label>
-                            <input type="text" name="camion_unidad" required placeholder="Ej. Camión 2" value="<?php echo $turno_actual['camion_unidad'] ?? ''; ?>" class="w-full border border-amber-300 rounded-xl p-2 text-xs bg-white font-semibold">
+                            <input type="text" name="camion_unidad" required placeholder="Ej. Camión 1" value="<?php echo $turno_actual['camion_unidad'] ?? ''; ?>" class="w-full border border-amber-300 rounded-xl p-2 text-xs bg-white font-semibold">
                         </div>
                     </div>
                     <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-xl text-xs transition">Guardar Chofer y Camión de Hoy</button>
