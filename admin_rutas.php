@@ -6,7 +6,7 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8");
 
-// Auto-creación y blindaje de tablas por seguridad
+// Auto-creación y blindaje de tablas con estructura fija por dispositivos
 $conn->query("CREATE TABLE IF NOT EXISTS clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
     nombre_local VARCHAR(150) NOT NULL,
@@ -22,6 +22,19 @@ $conn->query("CREATE TABLE IF NOT EXISTS repartidores (
     nombre VARCHAR(100) NOT NULL,
     telefono VARCHAR(50)
 )");
+
+// Insertar automáticamente los 4 dispositivos predeterminados si la tabla está vacía
+$check_rep = $conn->query("SELECT COUNT(*) as total FROM repartidores");
+if ($check_rep) {
+    $row_rep = $check_rep->fetch_assoc();
+    if ($row_rep['total'] == 0) {
+        $conn->query("INSERT INTO repartidores (id_repartidor, nombre, telefono) VALUES 
+            (1, 'Operador 1 (Teléfono 1)', 'Dispositivo 1'),
+            (2, 'Operador 2 (Teléfono 2)', 'Dispositivo 2'),
+            (3, 'Operador 3 (Teléfono 3)', 'Dispositivo 3'),
+            (4, 'Operador X (Domingo)', 'Dispositivo Domingo')");
+    }
+}
 
 $conn->query("CREATE TABLE IF NOT EXISTS rutas (
     id_ruta INT AUTO_INCREMENT PRIMARY KEY,
@@ -121,9 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
         $nombre = $conn->real_escape_string($_POST['nombre_repartidor']);
         $tel = $conn->real_escape_string($_POST['telefono_repartidor']);
         if ($conn->query("INSERT INTO repartidores (nombre, telefono) VALUES ('$nombre', '$tel')")) {
-            $mensaje = "✅ ¡Repartidor registrado con éxito!";
+            $mensaje = "✅ ¡Dispositivo/Operador registrado con éxito!";
         }
-    }  elseif ($_POST['accion'] == 'asignar_ruta') {
+    } elseif ($_POST['accion'] == 'asignar_ruta') {
         $id_rep = intval($_POST['id_repartidor']);
         $dia = $conn->real_escape_string($_POST['dia_semana']);
         $nom_ruta = $conn->real_escape_string($_POST['nombre_ruta']);
@@ -133,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
         // Sincronizar también el día en la tabla clientes
         $conn->query("UPDATE clientes SET delivery_day = '$dia' WHERE id_cliente = $id_cli");
 
-        // Buscar o crear la ruta para ese repartidor y día
+        // Buscar o crear la ruta para ese dispositivo y día
         $res = $conn->query("SELECT id_ruta FROM rutas WHERE id_repartidor = $id_rep AND dia_semana = '$dia' LIMIT 1");
         if ($res && $res->num_rows > 0) {
             $id_ruta = $res->fetch_assoc()['id_ruta'];
@@ -148,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
             $mensaje = "⚠️ Este cliente ya está asignado a esta ruta (evitado duplicado).";
         } else {
             if ($conn->query("INSERT INTO detalles_ruta (id_ruta, id_cliente, orden_entrega, estatus) VALUES ($id_ruta, $id_cli, $orden, 'Pendiente')")) {
-                $mensaje = "✅ ¡Asignado a la ruta correctamente!";
+                $mensaje = "✅ ¡Asignado al dispositivo/ruta correctamente!";
             }
         }
     }
@@ -165,7 +178,7 @@ if (isset($_GET['editar'])) {
 }
 
 $clientes = $conn->query("SELECT * FROM clientes ORDER BY nombre_local ASC");
-$repartidores = $conn->query("SELECT * FROM repartidores ORDER BY nombre ASC");
+$repartidores = $conn->query("SELECT * FROM repartidores ORDER BY id_repartidor ASC");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -182,7 +195,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY nombre ASC");
         <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold">🧊 Hielo Moscú - Panel de Oficina</h1>
-                <p class="text-xs text-blue-100 mt-1">Gestión de Rutas, Repartidores y Administración</p>
+                <p class="text-xs text-blue-100 mt-1">Gestión por Dispositivos Fijos (Operador 1, 2, 3 y X)</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="index.php" class="bg-white text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm"><i class="fa-solid fa-house"></i> Inicio</a>
@@ -234,31 +247,31 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY nombre ASC");
         <?php endif; ?>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Registrar Repartidor -->
+            <!-- Registrar / Gestionar Dispositivos -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-user-plus text-blue-600 mr-2"></i> Registrar Repartidor</h2>
+                <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-mobile-screen text-blue-600 mr-2"></i> Registrar Dispositivo / Operador</h2>
                 <form method="POST" class="space-y-3">
                     <input type="hidden" name="accion" value="crear_repartidor">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Repartidor</label>
-                        <input type="text" name="nombre_repartidor" required placeholder="Ej. Carlos Pérez" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Dispositivo / Operador</label>
+                        <input type="text" name="nombre_repartidor" required placeholder="Ej. Operador 4" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1">Teléfono / Celular</label>
-                        <input type="text" name="telefono_repartidor" required placeholder="Ej. 5587654321" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Descripción / Referencia</label>
+                        <input type="text" name="telefono_repartidor" required placeholder="Ej. Teléfono Adicional" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
                     </div>
-                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-sm">Guardar Repartidor</button>
+                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-sm">Guardar Dispositivo</button>
                 </form>
             </div>
 
-            <!-- Asignar Cliente a Ruta -->
+            <!-- Asignar Cliente a Ruta por Dispositivo -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-route text-blue-600 mr-2"></i> Asignar a Ruta</h2>
+                <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-route text-blue-600 mr-2"></i> Asignar Ruta a Dispositivo</h2>
                 <form method="POST" class="space-y-3">
                     <input type="hidden" name="accion" value="asignar_ruta">
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">Repartidor</label>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Dispositivo Fijo</label>
                             <select name="id_repartidor" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-bold">
                                 <option value="">-- Seleccionar --</option>
                                 <?php if($repartidores) { $repartidores->data_seek(0); while($r = $repartidores->fetch_assoc()): ?>
@@ -292,7 +305,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY nombre ASC");
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1">Nombre de la Ruta</label>
-                        <input type="text" name="nombre_ruta" placeholder="Ej. Ruta Centro" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-slate-50 font-bold">
+                        <input type="text" name="nombre_ruta" placeholder="Ej. Ruta Operador 1" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-slate-50 font-bold">
                     </div>
                     <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-sm">Asignar a Ruta</button>
                 </form>
@@ -342,68 +355,51 @@ $repartidores = $conn->query("SELECT * FROM repartidores ORDER BY nombre ASC");
         </div>
     </div>
 
-    <!-- Menú de Navegación Inferior Completo (7 botones independientes) -->
-   
-<!-- Menú de Navegación Inferior Completo y Visible -->
+    <!-- Menú de Navegación Inferior Completo y Visible -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-1 z-30 shadow-lg">
         <div class="max-w-xl mx-auto flex justify-around items-center text-center gap-0.5">
-            
-            <!-- Inicio -->
             <a href="index.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
                     <i class="fa-solid fa-house text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Inicio</span>
             </a>
-
-            <!-- Clientes -->
             <a href="clientes.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
                     <i class="fa-solid fa-users text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Clientes</span>
             </a>
-
-            <!-- Rutas -->
             <a href="rutas.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
                     <i class="fa-solid fa-route text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Rutas</span>
             </a>
-
-            <!-- Agregar (Botón Central Destacado) -->
             <a href="agregar.php" class="flex flex-col items-center transition -mt-3">
                 <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/40 border-2 border-white">
                     <i class="fa-solid fa-plus text-sm"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5 text-blue-600">Agregar</span>
             </a>
-
-            <!-- Oficina (Visible Directamente en el Menú) -->
             <a href="admin_rutas.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-800 text-white shadow-xs">
                     <i class="fa-solid fa-lock text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5 text-slate-800">Oficina</span>
             </a>
-
-            <!-- Buscar -->
             <a href="buscar.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
                     <i class="fa-solid fa-magnifying-glass text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Buscar</span>
             </a>
-
-            <!-- Mapa -->
             <a href="index.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
                     <i class="fa-solid fa-map text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Mapa</span>
             </a>
-
         </div>
     </nav>
 <?php include 'footer_mobile.php'; ?>
