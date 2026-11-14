@@ -1,8 +1,11 @@
 <?php
+require_once 'seguridad.php';
+
 $conn = new mysqli("localhost", "root", "", "hielo_moscu");
 if ($conn->connect_error) { 
     die("Error de conexión: " . $conn->connect_error); 
 }
+$conn->set_charset("utf8mb4");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -163,15 +166,31 @@ if ($conn->connect_error) {
                 const lng = parseFloat(c.longitude) || -99.018240;
                 L.marker([lat, lng]).addTo(markersGroup);
                 
+                const nombreLocal = c.name || c.nombre_local || 'Sin nombre';
+                const direccionLocal = c.address || c.direccion || 'Sin dirección';
+                const diaCliente = c.delivery_day || 'Sin día';
+
                 contenedor.innerHTML += `
                     <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex items-center justify-between hover:bg-slate-100/70 transition">
                         <div>
-                            <h4 class="text-xs font-bold text-slate-800">${idx + 1}. ${c.name || c.nombre_local} <span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-md ml-1">${c.delivery_day || 'Sin día'}</span></h4>
-                            <p class="text-[10px] text-slate-400 mt-0.5">${c.address || c.direccion || 'Sin dirección'}</p>
+                            <h4 class="text-xs font-bold text-slate-800">${idx + 1}. ${escapeHtml(nombreLocal)} <span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-md ml-1">${escapeHtml(diaCliente)}</span></h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(direccionLocal)}</p>
                         </div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address || c.direccion)}" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-xs flex items-center gap-1"><i class="fa-solid fa-map-location-dot"></i> Maps</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccionLocal)}" target="_blank" rel="noopener noreferrer" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-xs flex items-center gap-1"><i class="fa-solid fa-map-location-dot"></i> Maps</a>
                     </div>`;
             });
+        }
+
+        // Función auxiliar en JavaScript para prevenir XSS en contenido dinámico
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
         function filtrarDia(dia) {

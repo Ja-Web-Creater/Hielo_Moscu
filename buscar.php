@@ -1,4 +1,6 @@
 <?php
+require_once 'seguridad.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -6,13 +8,13 @@ $conn = new mysqli("localhost", "root", "", "hielo_moscu");
 if ($conn->connect_error) { 
     die("Error de conexión: " . $conn->connect_error); 
 }
-$conn->set_charset("utf8");
+$conn->set_charset("utf8mb4");
 
 $busqueda = trim($_GET['q'] ?? '');
 $clientes = [];
 
 if (!empty($busqueda)) {
-    $busqueda_sql = "%" . $conn->real_escape_string($busqueda) . "%";
+    $busqueda_sql = "%" . $busqueda . "%";
     $stmt = $conn->prepare("SELECT * FROM clientes WHERE nombre_local LIKE ? OR direccion LIKE ? OR telefono LIKE ?");
     $stmt->bind_param("sss", $busqueda_sql, $busqueda_sql, $busqueda_sql);
     $stmt->execute();
@@ -22,7 +24,7 @@ if (!empty($busqueda)) {
     }
     $stmt->close();
 } else {
-    // Si no hay búsqueda, mostramos los últimos clientes registrados
+    // Si no hay búsqueda, mostramos los últimos clientes registrados de forma segura
     $resultado = $conn->query("SELECT * FROM clientes ORDER BY id_cliente DESC LIMIT 20");
     if ($resultado) {
         while ($row = $resultado->fetch_assoc()) {
@@ -63,7 +65,7 @@ $conn->close();
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </span>
-                    <input type="text" name="q" value="<?php echo htmlspecialchars($busqueda); ?>" placeholder="Buscar por nombre, dirección o teléfono..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-600 transition">
+                    <input type="text" name="q" value="<?php echo e($busqueda); ?>" placeholder="Buscar por nombre, dirección o teléfono..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-600 transition">
                 </div>
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-xs font-bold transition shadow-sm">Buscar</button>
             </form>
@@ -83,15 +85,15 @@ $conn->close();
                         <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-100/70 transition">
                             <div>
                                 <h4 class="text-xs font-black text-slate-800">
-                                    <?php echo htmlspecialchars($c['nombre_local'] ?? $c['nombre'] ?? 'Sin nombre'); ?>
-                                    <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md ml-2 font-bold"><?php echo htmlspecialchars($c['delivery_day'] ?? 'Sin día'); ?></span>
+                                    <?php echo e($c['nombre_local'] ?? $c['nombre'] ?? 'Sin nombre'); ?>
+                                    <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md ml-2 font-bold"><?php echo e($c['delivery_day'] ?? 'Sin día'); ?></span>
                                 </h4>
-                                <p class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i><?php echo htmlspecialchars($c['direccion'] ?? 'Sin dirección'); ?></p>
+                                <p class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i><?php echo e($c['direccion'] ?? 'Sin dirección'); ?></p>
                                 <?php if (!empty($c['telefono'])): ?>
-                                    <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-solid fa-phone text-emerald-500 mr-1"></i><?php echo htmlspecialchars($c['telefono']); ?></p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5"><i class="fa-solid fa-phone text-emerald-500 mr-1"></i><?php echo e($c['telefono']); ?></p>
                                 <?php endif; ?>
                             </div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($c['direccion'] ?? ''); ?>" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-[10px] font-bold transition shadow-xs flex items-center gap-1 shrink-0">
+                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($c['direccion'] ?? ''); ?>" target="_blank" rel="noopener noreferrer" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-[10px] font-bold transition shadow-xs flex items-center gap-1 shrink-0">
                                 <i class="fa-solid fa-map-location-dot"></i> Maps
                             </a>
                         </div>
@@ -101,7 +103,7 @@ $conn->close();
         </div>
     </div>
 
-    <!-- Menú de Navegación Inferior Actualizado (Separado) -->
+    <!-- Menú de Navegación Inferior Actualizado -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-2 z-30 shadow-lg">
         <div class="max-w-md mx-auto flex justify-around items-center text-center">
             <a href="index.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">

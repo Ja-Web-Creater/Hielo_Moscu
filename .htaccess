@@ -1,0 +1,21 @@
+# =========================================================================
+# REGLAS DE SEGURIDAD DE SERVIDOR APACHE - HIELO MOSCÚ
+# =========================================================================
+
+# 1. Evitar que cualquiera pueda ver el listado de archivos de tus carpetas
+Options -Indexes
+
+# 2. Proteger archivos sensibles o de configuración contra descarga directa
+<FilesMatch "^(\.htaccess|\.git|seguridad\.php|conexion\.php|config\.php)">
+    Require all denied
+</FilesMatch>
+
+# 3. Bloquear firmas de servidor e información de Apache
+ServerSignature Off
+
+# 4. Cabeceras de respaldo a nivel servidor
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>

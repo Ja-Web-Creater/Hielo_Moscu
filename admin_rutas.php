@@ -1,12 +1,13 @@
 <?php
-session_start();
+require_once 'seguridad.php';
+
 $conn = new mysqli("localhost", "root", "", "hielo_moscu");
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
-$conn->set_charset("utf8");
+$conn->set_charset("utf8mb4");
 
-
+// Auto-creación y blindaje de tablas con estructura fija por dispositivos (Únicamente 3 dispositivos)
 $conn->query("CREATE TABLE IF NOT EXISTS clientes (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
     nombre_local VARCHAR(150) NOT NULL,
@@ -53,19 +54,26 @@ $conn->query("CREATE TABLE IF NOT EXISTS detalles_ruta (
 $error_login = "";
 $mensaje = "";
 
+// Validar token CSRF en cualquier petición POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    validar_csrf();
+}
+
 // Login de Oficina
 if (isset($_POST['login_admin'])) {
-    if (($_POST['password'] ?? '') === 'hielo123') {
+    if (hash_equals('hielo123', $_POST['password'] ?? '')) {
+        session_regenerate_id(true); // Evita Session Fixation en redes públicas/móviles
         $_SESSION['admin_autenticado'] = true;
         header("Location: admin_rutas.php");
         exit;
     } else {
-        $error_login = "❌ Contraseña incorrecta (hielo123).";
+        $error_login = "❌ Contraseña incorrecta.";
     }
 }
 
 if (isset($_GET['logout'])) {
     unset($_SESSION['admin_autenticado']);
+    session_regenerate_id(true);
     header("Location: admin_rutas.php");
     exit;
 }
@@ -93,12 +101,13 @@ if (!isset($_SESSION['admin_autenticado']) || $_SESSION['admin_autenticado'] !==
             <p class="text-xs text-slate-500 mt-1">Acceso restringido (Protegido)</p>
         </div>
         <?php if (!empty($error_login)): ?>
-            <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs font-semibold text-center"><?php echo $error_login; ?></div>
+            <div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl text-xs font-semibold text-center"><?php echo e($error_login); ?></div>
         <?php endif; ?>
         <form method="POST" class="space-y-4">
+            <?php echo campo_csrf(); ?>
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Contraseña</label>
-                <input type="password" name="password" required placeholder="Ej. hielo123" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="password" name="password" required placeholder="Ingresa tu contraseña" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
             </div>
             <button type="submit" name="login_admin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition">Entrar al Panel</button>
         </form>
@@ -111,56 +120,87 @@ if (!isset($_SESSION['admin_autenticado']) || $_SESSION['admin_autenticado'] !==
 </html>
 <?php exit; endif;
 
-// Acciones del Panel
+$dias_validos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+// Acciones del Panel con Prepared Statements (Anti-SQL Injection)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
     if ($_POST['accion'] == 'editar_cliente') {
         $id = intval($_POST['id_cliente']);
-        $nombre = $conn->real_escape_string($_POST['nombre_local']);
-        $tel = $conn->real_escape_string($_POST['telefono']);
-        $dir = $conn->real_escape_string($_POST['direccion']);
-        $dia = $conn->real_escape_string($_POST['delivery_day'] ?? 'Lunes');
+        $nombre = trim($_POST['nombre_local'] ?? '');
+        $tel = trim($_POST['telefono'] ?? '');
+        $dir = trim($_POST['direccion'] ?? '');
+        $dia = in_array($_POST['delivery_day'] ?? '', $dias_validos) ? $_POST['delivery_day'] : 'Lunes';
         
-        if ($conn->query("UPDATE clientes SET nombre_local='$nombre', telefono='$tel', direccion='$dir', delivery_day='$dia' WHERE id_cliente=$id")) {
+        $stmt = $conn->prepare("UPDATE clientes SET nombre_local = ?, telefono = ?, direccion = ?, delivery_day = ? WHERE id_cliente = ?");
+        $stmt->bind_param("ssssi", $nombre, $tel, $dir, $dia, $id);
+        if ($stmt->execute()) {
             $mensaje = "✅ ¡Cliente actualizado correctamente!";
         }
+        $stmt->close();
     } elseif ($_POST['accion'] == 'eliminar_cliente') {
         $id = intval($_POST['id_cliente']);
-        $conn->query("DELETE FROM detalles_ruta WHERE id_cliente = $id");
-        if ($conn->query("DELETE FROM clientes WHERE id_cliente = $id")) {
+        
+        $stmt1 = $conn->prepare("DELETE FROM detalles_ruta WHERE id_cliente = ?");
+        $stmt1->bind_param("i", $id);
+        $stmt1->execute();
+        $stmt1->close();
+
+        $stmt2 = $conn->prepare("DELETE FROM clientes WHERE id_cliente = ?");
+        $stmt2->bind_param("i", $id);
+        if ($stmt2->execute()) {
             $mensaje = "🗑️ ¡Cliente eliminado del sistema!";
         }
-    } elseif ($_POST['accion'] == 'crear_repartidor') {
-        $nombre = $conn->real_escape_string($_POST['nombre_repartidor']);
-        $tel = $conn->real_escape_string($_POST['telefono_repartidor']);
-        if ($conn->query("INSERT INTO repartidores (nombre, telefono) VALUES ('$nombre', '$tel')")) {
-            $mensaje = "✅ ¡Dispositivo registrado con éxito!";
-        }
+        $stmt2->close();
     } elseif ($_POST['accion'] == 'asignar_ruta') {
         $id_rep = intval($_POST['id_repartidor']);
-        $dia = $conn->real_escape_string($_POST['dia_semana']);
-        $nom_ruta = $conn->real_escape_string($_POST['nombre_ruta']);
+        $dia = in_array($_POST['dia_semana'] ?? '', $dias_validos) ? $_POST['dia_semana'] : 'Lunes';
+        $nom_ruta = trim($_POST['nombre_ruta'] ?? '');
         $id_cli = intval($_POST['id_cliente']);
-        $orden = intval($_POST['orden_entrega']);
+        $orden = max(1, intval($_POST['orden_entrega']));
 
-        // Sincronizar también el día en la tabla clientes
-        $conn->query("UPDATE clientes SET delivery_day = '$dia' WHERE id_cliente = $id_cli");
+        if (in_array($id_rep, [1, 2, 3], true) && $id_cli > 0 && $nom_ruta !== '') {
+            // Sincronizar también el día en la tabla clientes
+            $stmt_cli = $conn->prepare("UPDATE clientes SET delivery_day = ? WHERE id_cliente = ?");
+            $stmt_cli->bind_param("si", $dia, $id_cli);
+            $stmt_cli->execute();
+            $stmt_cli->close();
 
-        // Buscar o crear la ruta para ese dispositivo y día
-        $res = $conn->query("SELECT id_ruta FROM rutas WHERE id_repartidor = $id_rep AND dia_semana = '$dia' LIMIT 1");
-        if ($res && $res->num_rows > 0) {
-            $id_ruta = $res->fetch_assoc()['id_ruta'];
-        } else {
-            $conn->query("INSERT INTO rutas (id_repartidor, dia_semana, nombre_ruta) VALUES ($id_rep, '$dia', '$nom_ruta')");
-            $id_ruta = $conn->insert_id;
-        }
+            // Buscar o crear la ruta para ese dispositivo y día
+            $stmt_res = $conn->prepare("SELECT id_ruta FROM rutas WHERE id_repartidor = ? AND dia_semana = ? LIMIT 1");
+            $stmt_res->bind_param("is", $id_rep, $dia);
+            $stmt_res->execute();
+            $res = $stmt_res->get_result();
 
-        // VALIDACIÓN ANTI-DUPLICADOS: Verificar si el cliente ya está asignado a esta ruta
-        $checar_duplicado = $conn->query("SELECT id_detalle FROM detalles_ruta WHERE id_ruta = $id_ruta AND id_cliente = $id_cli");
-        if ($checar_duplicado && $checar_duplicado->num_rows > 0) {
-            $mensaje = "⚠️ Este cliente ya está asignado a esta ruta (evitado duplicado).";
-        } else {
-            if ($conn->query("INSERT INTO detalles_ruta (id_ruta, id_cliente, orden_entrega, estatus) VALUES ($id_ruta, $id_cli, $orden, 'Pendiente')")) {
-                $mensaje = "✅ ¡Asignado al dispositivo/ruta correctamente!";
+            if ($res && $res->num_rows > 0) {
+                $id_ruta = $res->fetch_assoc()['id_ruta'];
+                $stmt_res->close();
+            } else {
+                $stmt_res->close();
+                $stmt_ins_ruta = $conn->prepare("INSERT INTO rutas (id_repartidor, dia_semana, nombre_ruta) VALUES (?, ?, ?)");
+                $stmt_ins_ruta->bind_param("iss", $id_rep, $dia, $nom_ruta);
+                $stmt_ins_ruta->execute();
+                $id_ruta = $conn->insert_id;
+                $stmt_ins_ruta->close();
+            }
+
+            // VALIDACIÓN ANTI-DUPLICADOS
+            $stmt_dup = $conn->prepare("SELECT id_detalle FROM detalles_ruta WHERE id_ruta = ? AND id_cliente = ?");
+            $stmt_dup->bind_param("ii", $id_ruta, $id_cli);
+            $stmt_dup->execute();
+            $checar_duplicado = $stmt_dup->get_result();
+
+            if ($checar_duplicado && $checar_duplicado->num_rows > 0) {
+                $mensaje = "⚠️ Este cliente ya está asignado a esta ruta (evitado duplicado).";
+                $stmt_dup->close();
+            } else {
+                $stmt_dup->close();
+                $estatus_init = 'Pendiente';
+                $stmt_det = $conn->prepare("INSERT INTO detalles_ruta (id_ruta, id_cliente, orden_entrega, estatus) VALUES (?, ?, ?, ?)");
+                $stmt_det->bind_param("iiis", $id_ruta, $id_cli, $orden, $estatus_init);
+                if ($stmt_det->execute()) {
+                    $mensaje = "✅ ¡Asignado al dispositivo/ruta correctamente!";
+                }
+                $stmt_det->close();
             }
         }
     }
@@ -170,14 +210,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accion'])) {
 $cliente_edit = null;
 if (isset($_GET['editar'])) {
     $id_edit = intval($_GET['editar']);
-    $res_edit = $conn->query("SELECT * FROM clientes WHERE id_cliente = $id_edit");
+    $stmt_edit = $conn->prepare("SELECT * FROM clientes WHERE id_cliente = ?");
+    $stmt_edit->bind_param("i", $id_edit);
+    $stmt_edit->execute();
+    $res_edit = $stmt_edit->get_result();
     if ($res_edit && $res_edit->num_rows > 0) {
         $cliente_edit = $res_edit->fetch_assoc();
     }
+    $stmt_edit->close();
 }
 
 $clientes = $conn->query("SELECT * FROM clientes ORDER BY nombre_local ASC");
-// Mostrar únicamente los 3 dispositivos principales (IDs 1, 2, 3)
 $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN (1, 2, 3) ORDER BY id_repartidor ASC");
 ?>
 <!DOCTYPE html>
@@ -195,7 +238,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
         <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-xl font-bold">🧊 Hielo Moscú - Panel de Oficina</h1>
-                <p class="text-xs text-blue-100 mt-1"> </p>
+                <p class="text-xs text-blue-100 mt-1">Gestión por 3 Dispositivos Fijos</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <a href="index.php" class="bg-white text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm"><i class="fa-solid fa-house"></i> Inicio</a>
@@ -207,7 +250,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
 
         <?php if (!empty($mensaje)): ?>
             <div class="bg-emerald-100 border border-emerald-300 text-emerald-800 p-4 rounded-xl text-sm font-semibold flex items-center gap-2">
-                <i class="fa-solid fa-circle-check"></i> <?php echo $mensaje; ?>
+                <i class="fa-solid fa-circle-check"></i> <?php echo e($mensaje); ?>
             </div>
         <?php endif; ?>
 
@@ -216,27 +259,28 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-200 space-y-4">
             <h2 class="text-base font-bold text-blue-950"><i class="fa-solid fa-pen text-blue-600 mr-2"></i> Modificar Datos del Cliente</h2>
             <form method="POST" class="space-y-3">
+                <?php echo campo_csrf(); ?>
                 <input type="hidden" name="accion" value="editar_cliente">
-                <input type="hidden" name="id_cliente" value="<?php echo $cliente_edit['id_cliente']; ?>">
+                <input type="hidden" name="id_cliente" value="<?php echo intval($cliente_edit['id_cliente']); ?>">
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Local</label>
-                    <input type="text" name="nombre_local" required value="<?php echo htmlspecialchars($cliente_edit['nombre_local']); ?>" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-slate-50">
+                    <input type="text" name="nombre_local" required value="<?php echo e($cliente_edit['nombre_local']); ?>" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-slate-50">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">Teléfono</label>
-                    <input type="text" name="telefono" value="<?php echo htmlspecialchars($cliente_edit['telefono'] ?? ''); ?>" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-slate-50">
+                    <input type="text" name="telefono" value="<?php echo e($cliente_edit['telefono'] ?? ''); ?>" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-slate-50">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">Día de Entrega</label>
                     <select name="delivery_day" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-slate-50 font-bold">
-                        <?php foreach(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as $d): ?>
-                            <option value="<?php echo $d; ?>" <?php echo (($cliente_edit['delivery_day'] ?? '') === $d) ? 'selected' : ''; ?>><?php echo $d; ?></option>
+                        <?php foreach($dias_validos as $d): ?>
+                            <option value="<?php echo e($d); ?>" <?php echo (($cliente_edit['delivery_day'] ?? '') === $d) ? 'selected' : ''; ?>><?php echo e($d); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-1">Dirección</label>
-                    <textarea name="direccion" required rows="2" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-slate-50"><?php echo htmlspecialchars($cliente_edit['direccion']); ?></textarea>
+                    <textarea name="direccion" required rows="2" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-slate-50"><?php echo e($cliente_edit['direccion']); ?></textarea>
                 </div>
                 <div class="flex gap-2 pt-2">
                     <a href="admin_rutas.php" class="flex-1 bg-slate-200 text-slate-700 text-center py-3 rounded-xl text-sm font-bold hover:bg-slate-300 transition">Cancelar</a>
@@ -251,6 +295,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4 md:col-span-2">
                 <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-route text-blue-600 mr-2"></i> Asignar Ruta a Dispositivo Fijo</h2>
                 <form method="POST" class="space-y-3">
+                    <?php echo campo_csrf(); ?>
                     <input type="hidden" name="accion" value="asignar_ruta">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
@@ -258,15 +303,15 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
                             <select name="id_repartidor" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-bold">
                                 <option value="">-- Seleccionar Dispositivo --</option>
                                 <?php if($repartidores) { $repartidores->data_seek(0); while($r = $repartidores->fetch_assoc()): ?>
-                                    <option value="<?php echo $r['id_repartidor']; ?>"><?php echo $r['nombre']; ?></option>
+                                    <option value="<?php echo intval($r['id_repartidor']); ?>"><?php echo e($r['nombre']); ?></option>
                                 <?php endwhile; } ?>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 mb-1">Día</label>
                             <select name="dia_semana" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-bold">
-                                <?php foreach(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] as $d): ?>
-                                    <option value="<?php echo $d; ?>"><?php echo $d; ?></option>
+                                <?php foreach($dias_validos as $d): ?>
+                                    <option value="<?php echo e($d); ?>"><?php echo e($d); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -277,7 +322,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
                             <select name="id_cliente" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-bold">
                                 <option value="">-- Seleccionar Cliente --</option>
                                 <?php if($clientes) { $clientes->data_seek(0); while($c = $clientes->fetch_assoc()): ?>
-                                    <option value="<?php echo $c['id_cliente']; ?>"><?php echo $c['nombre_local']; ?></option>
+                                    <option value="<?php echo intval($c['id_cliente']); ?>"><?php echo e($c['nombre_local']); ?></option>
                                 <?php endwhile; } ?>
                             </select>
                         </div>
@@ -316,15 +361,16 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
                             while($c = $clientes->fetch_assoc()):
                         ?>
                             <tr class="hover:bg-slate-50 transition">
-                                <td class="p-3 font-bold text-blue-950"><?php echo htmlspecialchars($c['nombre_local']); ?></td>
-                                <td class="p-3"><span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded-md font-bold text-[10px]"><?php echo htmlspecialchars($c['delivery_day'] ?? 'Sin día'); ?></span></td>
-                                <td class="p-3 text-slate-600"><?php echo htmlspecialchars($c['telefono'] ?? '---'); ?></td>
-                                <td class="p-3 text-slate-500 truncate max-w-xs"><?php echo htmlspecialchars($c['direccion']); ?></td>
+                                <td class="p-3 font-bold text-blue-950"><?php echo e($c['nombre_local']); ?></td>
+                                <td class="p-3"><span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded-md font-bold text-[10px]"><?php echo e($c['delivery_day'] ?? 'Sin día'); ?></span></td>
+                                <td class="p-3 text-slate-600"><?php echo e($c['telefono'] ?? '---'); ?></td>
+                                <td class="p-3 text-slate-500 truncate max-w-xs"><?php echo e($c['direccion']); ?></td>
                                 <td class="p-3 text-center space-x-1">
-                                    <a href="admin_rutas.php?editar=<?php echo $c['id_cliente']; ?>" class="bg-sky-100 hover:bg-sky-200 text-sky-700 px-2.5 py-1 rounded-lg font-bold transition inline-block" title="Modificar"><i class="fa-solid fa-pen"></i> Editar</a>
+                                    <a href="admin_rutas.php?editar=<?php echo intval($c['id_cliente']); ?>" class="bg-sky-100 hover:bg-sky-200 text-sky-700 px-2.5 py-1 rounded-lg font-bold transition inline-block" title="Modificar"><i class="fa-solid fa-pen"></i> Editar</a>
                                     <form method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de eliminar este cliente? Se borrará de sus rutas asignadas.');">
+                                        <?php echo campo_csrf(); ?>
                                         <input type="hidden" name="accion" value="eliminar_cliente">
-                                        <input type="hidden" name="id_cliente" value="<?php echo $c['id_cliente']; ?>">
+                                        <input type="hidden" name="id_cliente" value="<?php echo intval($c['id_cliente']); ?>">
                                         <button type="submit" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded-lg font-bold transition" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </td>

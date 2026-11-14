@@ -1,4 +1,6 @@
 <?php
+require_once 'seguridad.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -6,39 +8,67 @@ $conn = new mysqli("localhost", "root", "", "hielo_moscu");
 if ($conn->connect_error) { 
     die("Error de conexión: " . $conn->connect_error); 
 }
-$conn->set_charset("utf8");
+$conn->set_charset("utf8mb4");
 
-// Asegurar automáticamente que la columna existe en la tabla clientes
+// Asegurar automáticamente que las columnas existen en la tabla clientes
 $conn->query("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS delivery_day VARCHAR(50) DEFAULT 'Lunes'");
 $conn->query("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS latitude DECIMAL(10,8) DEFAULT 19.412530");
 $conn->query("ALTER TABLE clientes ADD COLUMN IF NOT EXISTS longitude DECIMAL(11,8) DEFAULT -99.018240");
 
 $mensaje = "";
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nombre    = $conn->real_escape_string($_POST['nombre_local'] ?? '');
-    $telefono  = $conn->real_escape_string($_POST['telefono'] ?? '');
-    $direccion = $conn->real_escape_string($_POST['direccion'] ?? '');
+$dias_validos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+// Validar token CSRF en peticiones POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    validar_csrf();
+
+    $nombre    = trim($_POST['nombre_local'] ?? '');
+    $telefono  = trim($_POST['telefono'] ?? '');
+    $direccion = trim($_POST['direccion'] ?? '');
     
-    // Capturamos el día de la sugerencia de ruta (por defecto Martes)
-    $delivery_day = $conn->real_escape_string($_POST['delivery_day'] ?? 'Martes');
+    // Capturamos el día de la sugerencia de ruta validándolo contra los días permitidos
+    $delivery_day = in_array($_POST['delivery_day'] ?? '', $dias_validos, true) ? $_POST['delivery_day'] : 'Martes';
     
     // Coordenadas base para Nezahualcóyotl
     $latitude  = 19.412530;
     $longitude = -99.018240;
 
-    if (!empty($nombre) && !empty($direccion)) {
-        $sql = "INSERT INTO clientes (nombre_local, telefono, direccion, delivery_day, latitude, longitude) 
-                VALUES ('$nombre', '$telefono', '$direccion', '$delivery_day', '$latitude', '$longitude')";
+    if ($nombre !== '' && $direccion !== '') {
         
-        if ($conn->query($sql)) {
-            $mensaje = "✅ ¡Cliente registrado con éxito y asignado a ruta!";
+        // =====================================================================
+        // 1. VALIDACIÓN ANTI-DUPLICADOS (Verifica si ya existe por nombre o dirección)
+        // =====================================================================
+        $stmt_dup = $conn->prepare("SELECT id_cliente FROM clientes WHERE nombre_local = ? OR direccion = ? LIMIT 1");
+        $stmt_dup->bind_param("ss", $nombre, $direccion);
+        $stmt_dup->execute();
+        $stmt_dup->store_result();
+
+        if ($stmt_dup->num_rows > 0) {
+            $mensaje = "⚠️ Aviso: Ya existe un negocio registrado con ese nombre o dirección en el sistema.";
+            $stmt_dup->close();
         } else {
-            // Fallback defensivo si ocurriera otro problema con columnas
-            $sql_fallback = "INSERT INTO clientes (nombre_local, telefono, direccion) VALUES ('$nombre', '$telefono', '$direccion')";
-            if ($conn->query($sql_fallback)) {
-                $mensaje = "✅ ¡Cliente registrado con éxito!";
+            $stmt_dup->close();
+
+            // =====================================================================
+            // 2. INSERTAR SI NO EXISTE DUPLICADO (Prepared Statement)
+            // =====================================================================
+            $stmt = $conn->prepare("INSERT INTO clientes (nombre_local, telefono, direccion, delivery_day, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssdd", $nombre, $telefono, $direccion, $delivery_day, $latitude, $longitude);
+            
+            if ($stmt->execute()) {
+                $mensaje = "✅ ¡Cliente registrado con éxito y asignado a ruta!";
+                $stmt->close();
             } else {
-                $mensaje = "❌ Error al registrar: " . $conn->error;
+                $stmt->close();
+                // Fallback defensivo si ocurriera otro problema con columnas
+                $stmt_fallback = $conn->prepare("INSERT INTO clientes (nombre_local, telefono, direccion) VALUES (?, ?, ?)");
+                $stmt_fallback->bind_param("sss", $nombre, $telefono, $direccion);
+                if ($stmt_fallback->execute()) {
+                    $mensaje = "✅ ¡Cliente registrado con éxito!";
+                } else {
+                    $mensaje = "❌ Error al registrar: " . $conn->error;
+                }
+                $stmt_fallback->close();
             }
         }
     } else {
@@ -68,11 +98,12 @@ if (file_exists('header_mobile.php')) {
 
     <?php if(!empty($mensaje)): ?>
         <div class="bg-emerald-100 text-emerald-800 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
-            <i class="fa-solid fa-circle-check"></i> <?php echo $mensaje; ?>
+            <i class="fa-solid fa-circle-check"></i> <?php echo e($mensaje); ?>
         </div>
     <?php endif; ?>
 
     <form method="POST" class="space-y-4">
+        <?php echo campo_csrf(); ?>
         <!-- Datos del Cliente -->
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <h2 class="text-xs font-black text-blue-950 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-user text-blue-600"></i> Datos del cliente</h2>

@@ -1,6 +1,12 @@
 <?php
+require_once 'seguridad.php';
+
 $conn = new mysqli("localhost", "root", "", "hielo_moscu");
-if ($conn->connect_error) { die("Error de conexión: " . $conn->connect_error); }
+if ($conn->connect_error) { 
+    die("Error de conexión: " . $conn->connect_error); 
+}
+$conn->set_charset("utf8mb4");
+
 $clientes = $conn->query("SELECT * FROM clientes ORDER BY nombre_local ASC");
 include 'header_mobile.php';
 ?>
@@ -25,20 +31,21 @@ include 'header_mobile.php';
         <span class="text-[10px] font-bold text-slate-400">Ordenar por Nombre ▾</span>
     </div>
 
-    <!-- Listado de Clientes con Etiquetas de Rutas (Estilo Imagen 1) -->
+    <!-- Listado de Clientes con Etiquetas de Rutas -->
     <div id="lista-clientes" class="space-y-2.5">
         <?php if ($clientes && $clientes->num_rows > 0): ?>
             <?php while($c = $clientes->fetch_assoc()): ?>
-                <div class="bg-white hover:bg-slate-50 p-3.5 rounded-2xl border border-slate-200/85 transition shadow-xs space-y-2 cliente-item" data-nombre="<?php echo strtolower($c['nombre_local'] ?? ''); ?>" data-zona="<?php echo strtolower($c['direccion'] ?? ''); ?>">
+                <div class="bg-white hover:bg-slate-50 p-3.5 rounded-2xl border border-slate-200/85 transition shadow-xs space-y-2 cliente-item" 
+                     data-nombre="<?php echo e(mb_strtolower($c['nombre_local'] ?? '', 'UTF-8')); ?>" 
+                     data-zona="<?php echo e(mb_strtolower($c['direccion'] ?? '', 'UTF-8')); ?>">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h3 class="text-xs font-bold text-blue-950"><?php echo htmlspecialchars($c['nombre_local'] ?? 'Sin nombre'); ?></h3>
-                            <p class="text-[11px] text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i><?php echo htmlspecialchars($c['direccion'] ?? 'Sin dirección'); ?></p>
+                            <h3 class="text-xs font-bold text-blue-950"><?php echo e($c['nombre_local'] ?? 'Sin nombre'); ?></h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i><?php echo e($c['direccion'] ?? 'Sin dirección'); ?></p>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <!-- Etiquetas simuladas de rutas asignadas estilo mockup -->
                             <span class="text-[9px] font-bold bg-sky-100 text-sky-700 px-2 py-1 rounded-lg">Ruta 1</span>
-                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($c['direccion'] ?? ''); ?>" target="_blank" class="w-7 h-7 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-full flex items-center justify-center text-xs transition" title="Ver en Maps"><i class="fa-solid fa-eye"></i></a>
+                            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode($c['direccion'] ?? ''); ?>" target="_blank" rel="noopener noreferrer" class="w-7 h-7 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-full flex items-center justify-center text-xs transition" title="Ver en Maps"><i class="fa-solid fa-eye"></i></a>
                         </div>
                     </div>
                 </div>
@@ -53,8 +60,8 @@ include 'header_mobile.php';
     document.getElementById('buscador').addEventListener('input', function(e) {
         const filtro = e.target.value.toLowerCase();
         document.querySelectorAll('.cliente-item').forEach(item => {
-            const nombre = item.getAttribute('data-nombre');
-            const zona = item.getAttribute('data-zona');
+            const nombre = item.getAttribute('data-nombre') || '';
+            const zona = item.getAttribute('data-zona') || '';
             item.style.display = (nombre.includes(filtro) || zona.includes(filtro)) ? 'block' : 'none';
         });
     });

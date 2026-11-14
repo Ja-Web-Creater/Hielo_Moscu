@@ -1,4 +1,6 @@
 <?php
+require_once 'seguridad.php';
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -6,7 +8,7 @@ $conn = new mysqli("localhost", "root", "", "hielo_moscu");
 if ($conn->connect_error) { 
     die("Error de conexión a MySQL: " . $conn->connect_error); 
 }
-$conn->set_charset("utf8");
+$conn->set_charset("utf8mb4");
 
 // Consultamos todos los clientes de forma segura
 $sql = "SELECT * FROM clientes";
@@ -45,6 +47,7 @@ foreach ($conteo_dias as $dia => $total) {
         'total_clientes' => $total
     ];
 }
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -78,7 +81,7 @@ foreach ($conteo_dias as $dia => $total) {
             </div>
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
                 <p class="text-xs font-bold text-slate-400 uppercase">Clientes Totales</p>
-                <h3 class="text-2xl font-black text-sky-600 mt-1"><?php echo $total_clientes_global; ?></h3>
+                <h3 class="text-2xl font-black text-sky-600 mt-1"><?php echo intval($total_clientes_global); ?></h3>
             </div>
         </div>
 
@@ -94,9 +97,9 @@ foreach ($conteo_dias as $dia => $total) {
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <div>
                                 <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
-                                    <i class="fa-solid fa-calendar-day text-blue-600"></i> Día: <?php echo htmlspecialchars($ruta['delivery_day']); ?>
+                                    <i class="fa-solid fa-calendar-day text-blue-600"></i> Día: <?php echo e($ruta['delivery_day']); ?>
                                 </h4>
-                                <p class="text-xs font-bold text-sky-600 mt-1"><?php echo $ruta['total_clientes']; ?> cliente(s) programado(s)</p>
+                                <p class="text-xs font-bold text-sky-600 mt-1"><?php echo intval($ruta['total_clientes']); ?> cliente(s) programado(s)</p>
                             </div>
                             <a href="index.php" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-xs">Ver en Mapa</a>
                         </div>
@@ -106,7 +109,7 @@ foreach ($conteo_dias as $dia => $total) {
         </div>
     </div>
 
-    <!-- Menú de Navegación Inferior (Igual al de index.php) -->
+    <!-- Menú de Navegación Inferior -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2.5 px-3 z-30 shadow-lg">
         <div class="max-w-md mx-auto flex justify-around items-center text-center">
             <a href="index.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
