@@ -104,6 +104,8 @@ if (!empty($id_rep_sel)) {
     <title>Hielo Moscú - Repartidor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Script de soporte offline -->
+    <script src="offline-sync.js" defer></script>
 </head>
 <body class="bg-slate-100 font-sans p-4 max-w-md mx-auto pb-24">
     <div class="space-y-4">
@@ -138,7 +140,7 @@ if (!empty($id_rep_sel)) {
         </form>
 
         <?php if (!empty($id_rep_sel)): ?>
-            <!-- Registro Dinámico de Chofer y Camión del Día -->
+            <!-- Registro Dinámico de Chofer y Camión del Día (Con soporte Offline) -->
             <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
                     <h2 class="text-xs font-bold text-amber-900"><i class="fa-solid fa-id-card mr-1"></i> Turno de Hoy</h2>
@@ -146,7 +148,7 @@ if (!empty($id_rep_sel)) {
                         <span class="bg-amber-200 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-md">Registrado ✅</span>
                     <?php endif; ?>
                 </div>
-                <form method="POST" class="space-y-2">
+                <form method="POST" class="space-y-2" onsubmit="return gestionarEnvioFormulario(event, this, 'repartidor_ruta.php');">
                     <?php echo campo_csrf(); ?>
                     <input type="hidden" name="registrar_turno" value="1">
                     <input type="hidden" name="id_repartidor" value="<?php echo intval($id_rep_sel); ?>">
@@ -191,7 +193,7 @@ if (!empty($id_rep_sel)) {
                             <div class="mt-3 pt-3 border-t border-slate-100 flex gap-2">
                                 <a href="<?php echo e($maps_url); ?>" target="_blank" rel="noopener noreferrer" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-center py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1"><i class="fa-solid fa-map-location-dot"></i> Maps</a>
                                 <?php if (!$completado): ?>
-                                    <form method="POST" class="flex-1">
+                                    <form method="POST" class="flex-1" onsubmit="return gestionarEnvioFormulario(event, this, 'repartidor_ruta.php');">
                                         <?php echo campo_csrf(); ?>
                                         <input type="hidden" name="id_detalle" value="<?php echo intval($row['id_detalle']); ?>">
                                         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-xs font-bold"><i class="fa-solid fa-check"></i> Entregado</button>
