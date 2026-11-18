@@ -3,8 +3,8 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once 'seguridad.php';
 
-// CORRECCIÓN: Apuntando correctamente a la base de datos activa 'ZAP'
-$conn = new mysqli("localhost", "root", "", "ZAP");
+// Conexión a la base de datos activa 'ZAP'
+$conn = new mysqli("localhost", "root", "", "hielo_moscu");
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['registrar_turno'])) {
     $hoy = date('Y-m-d');
 
     if (in_array($id_rep, [1, 2, 3], true) && $chofer !== '' && $camion !== '') {
-        // Guardar o actualizar el turno de hoy para este dispositivo
         $stmt_del = $conn->prepare("DELETE FROM bitacora_turnos WHERE id_repartidor = ? AND fecha_turno = ?");
         $stmt_del->bind_param("is", $id_rep, $hoy);
         $stmt_del->execute();
@@ -112,12 +111,13 @@ if (!empty($id_rep_sel)) {
 </head>
 <body class="bg-slate-100 font-sans p-4 max-w-md mx-auto pb-24">
     <div class="space-y-4">
+        <!-- Encabezado con Botón Seguro de Inicio (Reemplazo de Oficina) -->
         <div class="bg-blue-600 text-white p-5 rounded-2xl shadow-sm flex justify-between items-center">
             <div>
                 <h1 class="text-base font-bold"><i class="fa-solid fa-truck-fast mr-2"></i>Vista Repartidor</h1>
                 <p class="text-[11px] text-blue-100">Control por Dispositivo Fijo</p>
             </div>
-            <a href="admin_rutas.php" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-xl text-xs font-semibold"><i class="fa-solid fa-lock"></i> Oficina</a>
+            <a href="index.php" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-sm"><i class="fa-solid fa-house"></i> Inicio</a>
         </div>
 
         <!-- Selector de Dispositivo y Día -->

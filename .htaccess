@@ -2,29 +2,25 @@
 # REGLAS DE SEGURIDAD DE SERVIDOR APACHE - HIELO MOSCÚ
 # =========================================================================
 
-# 1. Evitar que cualquiera pueda ver el listado de archivos de tus carpetas
+# 1. Evitar listado de directorios
 Options -Indexes
 
-# 2. Proteger archivos sensibles o de configuración contra descarga directa
+# 2. Proteger archivos sensibles
 <FilesMatch "^(\.htaccess|\.git|seguridad\.php|conexion\.php|config\.php)">
     Require all denied
 </FilesMatch>
 
-# 3. Bloquear firmas de servidor
+# 3. Ocultar firma de servidor
 ServerSignature Off
 
-# 4. Cabeceras de seguridad y control de headers (protegidas por IfModule)
-
+# 4. Cabeceras de seguridad unificadas (Evita duplicados)
 <IfModule mod_headers.c>
-    # Evita ataques de Clickjacking
-    Header always set X-Frame-Options "SAMEORIGIN"
-    
-    # Previene la interpretación incorrecta de tipos MIME (MIME-sniffing)
-    Header always set X-Content-Type-Options "nosniff"
-    
-    # Protección básica contra XSS en navegadores antiguos
-    Header always set X-XSS-Protection "1; mode=block"
-    
-    # Ocultar tecnología de PHP
+    # Remover cabeceras que revelan tecnología o se duplican
     Header unset X-Powered-By
+    Header always unset X-Frame-Options
+
+    # Aplicar cabeceras de forma limpia y única
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
 </IfModule>

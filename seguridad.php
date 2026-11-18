@@ -57,3 +57,5 @@ function validar_csrf() {
 function e($texto) {
     return htmlspecialchars((string)$texto, ENT_QUOTES, 'UTF-8');
 }
+
+echo '<script src="menu.js" defer></script>';

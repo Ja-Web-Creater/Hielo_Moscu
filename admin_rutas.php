@@ -90,7 +90,7 @@ if (!isset($_SESSION['admin_autenticado']) || $_SESSION['admin_autenticado'] !==
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 font-sans flex items-center justify-center min-h-screen p-4">
+<body class="bg-slate-100 font-sans flex items-center justify-center min-h-screen p-4 pb-24">
     <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-sm w-full space-y-6 relative">
         <a href="index.php" class="absolute top-4 right-4 text-slate-400 hover:text-blue-600 transition" title="Volver al Inicio">
             <i class="fa-solid fa-house text-lg"></i>
@@ -111,11 +111,58 @@ if (!isset($_SESSION['admin_autenticado']) || $_SESSION['admin_autenticado'] !==
             </div>
             <button type="submit" name="login_admin" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition">Entrar al Panel</button>
         </form>
-        <div class="flex justify-between items-center pt-2 border-t border-slate-100 text-xs">
-            <a href="index.php" class="text-slate-600 font-semibold hover:underline"><i class="fa-solid fa-arrow-left mr-1"></i> Ir a Inicio</a>
-            <a href="repartidor_ruta.php" class="text-blue-600 font-semibold hover:underline">Vista Repartidor ➔</a>
+        <div class="flex justify-center items-center pt-2 border-t border-slate-100 text-xs">
+            <a href="index.php" class="text-slate-600 font-semibold hover:underline"><i class="fa-solid fa-arrow-left mr-1"></i> Volver a Inicio</a>
         </div>
     </div>
+
+    <!-- Menú Inferior Estándar Fijo en Login -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-1 z-50 shadow-lg">
+        <div class="max-w-xl mx-auto flex justify-around items-center text-center gap-0.5">
+            <a href="index.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
+                    <i class="fa-solid fa-house text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5">Inicio</span>
+            </a>
+            <a href="clientes.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
+                    <i class="fa-solid fa-users text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5">Clientes</span>
+            </a>
+            <a href="rutas.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
+                    <i class="fa-solid fa-route text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5">Rutas</span>
+            </a>
+            <a href="agregar.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-600 text-white shadow-xs">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5 text-blue-600">Agregar</span>
+            </a>
+            <a href="repartidor_ruta.php" class="flex flex-col items-center text-slate-500 hover:text-amber-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500 text-white shadow-xs">
+                    <i class="fa-solid fa-truck text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5 text-amber-600">Repartidor</span>
+            </a>
+            <a href="admin_rutas.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-800 text-white shadow-xs">
+                    <i class="fa-solid fa-lock text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5 text-slate-800">Oficina</span>
+            </a>
+            <a href="buscar.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5">Buscar</span>
+            </a>
+        </div>
+    </nav>
 </body>
 </html>
 <?php exit; endif;
@@ -243,7 +290,6 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
             <div class="flex flex-wrap gap-2">
                 <a href="index.php" class="bg-white text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm"><i class="fa-solid fa-house"></i> Inicio</a>
                 <a href="agregar.php" class="bg-blue-500 hover:bg-blue-400 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1"><i class="fa-solid fa-user-plus"></i> + Cliente</a>
-                <a href="repartidor_ruta.php" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1"><i class="fa-solid fa-truck"></i> Repartidor</a>
                 <a href="admin_rutas.php?logout=true" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
             </div>
         </div>
@@ -383,9 +429,9 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
             </div>
         </div>
     </div>
-
-    <!-- Menú de Navegación Inferior Completo y Visible -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-1 z-30 shadow-lg">
+    
+    <!-- Menú de Navegación Inferior Definitivo (Orden exacto y estático con los 7 botones) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-1 z-50 shadow-lg">
         <div class="max-w-xl mx-auto flex justify-around items-center text-center gap-0.5">
             <a href="index.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
@@ -405,11 +451,17 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Rutas</span>
             </a>
-            <a href="agregar.php" class="flex flex-col items-center transition -mt-3">
-                <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-500/40 border-2 border-white">
-                    <i class="fa-solid fa-plus text-sm"></i>
+            <a href="agregar.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-600 text-white shadow-xs">
+                    <i class="fa-solid fa-plus text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5 text-blue-600">Agregar</span>
+            </a>
+            <a href="repartidor_ruta.php" class="flex flex-col items-center text-slate-500 hover:text-amber-600 transition">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500 text-white shadow-xs">
+                    <i class="fa-solid fa-truck text-xs"></i>
+                </div>
+                <span class="text-[8px] font-bold mt-0.5 text-amber-600">Repartidor</span>
             </a>
             <a href="admin_rutas.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-800 text-white shadow-xs">
@@ -423,14 +475,7 @@ $repartidores = $conn->query("SELECT * FROM repartidores WHERE id_repartidor IN 
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Buscar</span>
             </a>
-            <a href="index.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100 text-slate-700 shadow-xs">
-                    <i class="fa-solid fa-map text-xs"></i>
-                </div>
-                <span class="text-[8px] font-bold mt-0.5">Mapa</span>
-            </a>
         </div>
     </nav>
-<?php include 'footer_mobile.php'; ?>
 </body>
 </html>
