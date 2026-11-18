@@ -14,9 +14,17 @@ Options -Indexes
 ServerSignature Off
 
 # 4. Cabeceras de seguridad y control de headers (protegidas por IfModule)
+
 <IfModule mod_headers.c>
-    Header unset X-Powered-By
+    # Evita ataques de Clickjacking
     Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Previene la interpretación incorrecta de tipos MIME (MIME-sniffing)
     Header always set X-Content-Type-Options "nosniff"
+    
+    # Protección básica contra XSS en navegadores antiguos
     Header always set X-XSS-Protection "1; mode=block"
+    
+    # Ocultar tecnología de PHP
+    Header unset X-Powered-By
 </IfModule>
