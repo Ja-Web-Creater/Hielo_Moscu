@@ -1,7 +1,10 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require_once 'seguridad.php';
 
-$conn = new mysqli("localhost", "root", "", "hielo_moscu");
+// CORRECCIÓN: Apuntando correctamente a la base de datos activa 'ZAP'
+$conn = new mysqli("localhost", "root", "", "ZAP");
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }

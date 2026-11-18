@@ -10,7 +10,7 @@ header("Pragma: no-cache");
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db   = "hielo_moscu";
+$db   = "ZAP";
 
 $conn = new mysqli($host, $user, $pass, $db);
 

@@ -10,12 +10,13 @@ Options -Indexes
     Require all denied
 </FilesMatch>
 
-# 3. Bloquear firmas de servidor e información de Apache
+# 3. Bloquear firmas de servidor
 ServerSignature Off
 
-# 4. Cabeceras de respaldo a nivel servidor
+# 4. Cabeceras de seguridad y control de headers (protegidas por IfModule)
 <IfModule mod_headers.c>
-    Header always set X-Content-Type-Options "nosniff"
+    Header unset X-Powered-By
     Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
     Header always set X-XSS-Protection "1; mode=block"
 </IfModule>
