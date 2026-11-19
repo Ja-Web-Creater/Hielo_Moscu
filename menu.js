@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const barrasViejas = document.querySelectorAll("nav.fixed, .nav-inferior");
     barrasViejas.forEach(b => b.remove());
 
-    // Crear la barra unificada definitiva con los 7 botones exactos
+    // Crear la barra unificada definitiva con los 6 botones exactos (sin Agregar)
     const nav = document.createElement("nav");
     nav.className = "fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-1 z-50 shadow-lg";
     
@@ -26,12 +26,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     <i class="fa-solid fa-route text-xs"></i>
                 </div>
                 <span class="text-[8px] font-bold mt-0.5">Rutas</span>
-            </a>
-            <a href="agregar.php" class="flex flex-col items-center text-slate-500 hover:text-blue-600 transition">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-600 text-white shadow-xs">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                </div>
-                <span class="text-[8px] font-bold mt-0.5 text-blue-600">Agregar</span>
             </a>
             <a href="repartidor_ruta.php" class="flex flex-col items-center text-slate-500 hover:text-amber-600 transition">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500 text-white shadow-xs">
